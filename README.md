@@ -35,13 +35,9 @@ In addition to all the packages and technologies which made this project possibl
 
 Finally, while I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version).
 
-<hr>
-</br>
 </br>
 <hr>
 </br>
-</br>
-<hr>
 
 ## How does it work?
 
@@ -57,8 +53,7 @@ Finally with those two threads running in the background, **we turn our attentio
 
 When the level is quit, a signal is sent for all the threads to gracefully exit and the QObjects holding the level UI and signals are destroyed.
 
-<code>
-Thread communication visualization: </code>
+<code> Thread communication visualization: </code>
 
         MAIN GUI ←——→ GAME LOGIC ←——— CAM/POSE ML
             |                             ↑
