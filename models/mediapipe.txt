@@ -1,0 +1,3 @@
+Download the mediapipe pose tracking ML models here:
+
+https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker
