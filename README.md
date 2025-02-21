@@ -58,7 +58,7 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
         MAIN GUI ←——→ GAME LOGIC ←——— CAM/POSE ML
             |                             ↑
             |_____________________________|
-                (quit signal only)
+                  (quit signal only)
 
 
 ### Why go through all these hoops instead of just doing everything in app.py?
