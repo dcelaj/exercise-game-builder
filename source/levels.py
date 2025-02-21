@@ -3,45 +3,76 @@ import helpers
 import poseestim
 from time import sleep
 
-def level1(): #would need a kill button that closes the threads
-    signals = []
+# Setting up GUI, signals, and threads to run the level
+def start_level(level=0):
+    '''
+    '''
+    # TODO: Write the proper GUI objects and signals startup and also the threading startup, the whole thing really
+    print("Creating custom GUI QWidgets...")
+    sleep(1)
+    print("Creating singal handler QObjects...")
+    sleep(1)
+    print("Connecting singal handlers to functions...")
+    sleep(1)
+    print("\n")
 
-    #t1 = threading.Thread(target=helpers.thread1, args=(signals,))
-    #t2 = threading.Thread(target=helpers.thread2, args=(signals,))
-    #t1 = poseestim.PoseEstimation()
+    #__________
+    # All these print statements are basically a big todo list
+    print("Starting camera ML thread...")
+    sleep(1.5)
+    print("\n")
+
+    #__________
+    # Calling function of selected level in another thread
+    match level:
+        case 0:
+            print("Demo Level Selected!")
+            print("Starting demo_level thread...")
+        case 1:
+            print("Level 1 Slected!")
+            print("Starting level1 thread...")
+        case _:
+            print("ERROR: Level does not exist")
+            print("Starting default level...")
+
+            # Use the demo level as the default case
+            print("Starting demo_level thread...")
+    
+    # Return the references/pointers
+    sleep(2)
+    print("\n")
+    print("Returning pointers to all created objects and threads...")
+
+
+# Level functions
+import numpy as np # temp, TODO: remove when not needed for testing
+def level1():
+    feed = helpers.VideoFeed()
+    
+    image = np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8)
+
+    feed.update_frame(image)
+
+    return feed
+
+
+def level2():
+    feed = helpers.VideoFeed() #maybe eventually pass it dimensions
+
     t1 = poseestim.PoseEstimation()
 
     t1.start()
-    #t2.start()
+    sleep(1)
+
+    feed.update_frame(t1.image)
         
-    sleep(5)
+    sleep(1)
     t1.change_exercise(2)
 
-    return t1.image
+    feed.update_frame(t1.image)
 
-#try to keep a pure python threading pool and only using GUI to listen for a quit command.
-#but maybe I'll need to use QT's stuff to accomplish the animations, something to look into
-#also, make sure to use signals to comm with main thread if you wanna change GUI stuff - levels should only 
-#be called in the main thread anyway, but if it blocks its a func call, may have to mcgyver a solution
+    t1.stop()
 
-#   WAIT MAYBE JUST MAKE LEVELS FUCKING CLASSES HOLY SHIT YEAH NO FUCKING SHIT DUDE IM SO DUMB  
-# will still need to have func calls within the class (making the threads), but we can make them run at instantiation
-# delete class object upon quitting level
+    t1.join()
 
-#t1 = poseestim.PoseEstimation(1, False)
-
-#t1.start()   
-#sleep(5)
-#t1.change_exercise(2)
-#t1.stop()
-
-def level2():
-    # Maybe straight up build the level UI FROM INSIDE THE LEVELS.PY
-    # so like import helpers, 
-    # when the outside calls level2(), have it pass a blank self widget and clear everything else
-    # then have the first helper class you call be a custom QWIDGET CONTAINING THE LEVEL LAYOUT
-    # BUT HOW WILL I SET UP THJE THREAD COKMUINICATIPN it sucks that people are so awful at explaining this
-    print("fuck me")
-    # Fallback plan - still do the helper UI thing, just have some extra messy functions in your main app.py code that trigger 
-    # those built in ones - then just connect to the thread code as soon as the level startup func returns with the thread
-    # pointers. Follow some bullshit generic tutorial to do that, since you'll have the thread pointers anyway.
+    return feed

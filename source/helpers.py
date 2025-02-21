@@ -27,16 +27,14 @@ import sys
 # Pose Estim carries 
 
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
-
+# TODO: Clean up this whole file, Jesus man
 class VideoFeed(QWidget):
-    def __init__(self, capture):
+    def __init__(self):
         super().__init__()
         self.setAttribute(Qt.WA_DeleteOnClose)
 
-        self.capture = capture
         self.video_size = QSize(320, 240)
         self.setup_ui()
-        self.setup_camera()
 
     def setup_ui(self):
         self.image_label = QLabel()
@@ -52,10 +50,10 @@ class VideoFeed(QWidget):
         #setting the structure of the widget
         self.setLayout(self.main_layout)
 
-    def setup_camera(self):
+    #def setup_camera(self):
         #self.capture = cv2.VideoCapture(0) # NO NEED - SHOULD BE HANDLED IN poseestim.py
-        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_size.width())
-        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_size.height())
+        # self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.video_size.width())
+        # self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.video_size.height())
 
         # Consider deleting these 3 lines and relying on main game loop to call VideoFeed.display_video_stream()
         #self.timer = QTimer()
@@ -63,15 +61,16 @@ class VideoFeed(QWidget):
         #self.timer.start(42) 
 
     # Read frame from camera and repaint QLabel widget.
-    def display_video_stream(self):
-        _, frame = self.capture.read()
+    def update_frame(self, frame):
+        #_, frame = self.capture.read()
         # Converting from OpenCV's format to general image
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = cv2.flip(frame, 1)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #frame = cv2.flip(frame, 1)
+        self.frame = frame
 
         # Converting to Qt's format
-        image = QImage(frame, frame.shape[1], frame.shape[0], 
-                       frame.strides[0], QImage.Format_RGB888)
+        image = QImage(self.frame, self.frame.shape[1], self.frame.shape[0], 
+                       self.frame.strides[0], QImage.Format_RGB888)
         
         # Passing image to the "image_label" widget
         self.image_label.setPixmap(QPixmap.fromImage(image))
