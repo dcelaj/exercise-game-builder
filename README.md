@@ -1,4 +1,4 @@
-# Exercise Test Game
+# Exercise Game Builder
 
 This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6** and **Qt** for the GUI and event loop, the open source **MediaPipe** project (which itself uses absl-py, attrs, flatbuffers, jax/jaxlib, matplotlib, numpy, opencv, protobuf, sounddevice, sentencepiece) to achieve the pose estimation, and **PyInstaller** to package everything.
 
@@ -55,10 +55,11 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
 
 <code> Thread communication visualization: </code>
 
-        MAIN GUI ←——→ GAME LOGIC ←——— CAM/POSE ML
-            |                             ↑
-            |_____________________________|
-                  (quit signal only)
+        MAIN GUI ←——— GAME LOGIC ←——— CAM/POSE ML
+            :
+            |             ↑               ↑
+            |_____________|_______________|
+             only to tell them start/stop
 
 
 ### Why go through all these hoops instead of just doing everything in app.py?
