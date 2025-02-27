@@ -47,17 +47,17 @@ def start_level(level=0):
 # Level functions
 import numpy as np # temp, TODO: remove when not needed for testing
 def level1():
-    feed = helpers.VideoFeed()
+    feed = helpers.PlayerFeed()
     
     image = np.random.randint(0, 256, (100, 100, 3), dtype=np.uint8)
 
     feed.update_frame(image)
 
-    return feed
+    return feed # still just testing these level funcs normally wouldnt return anything
 
 
-def level2():
-    feed = helpers.VideoFeed() #maybe eventually pass it dimensions
+def level2(): # still just testing these level funcs normally wouldnt return anything
+    feed = helpers.PlayerFeed() #maybe eventually pass it dimensions
 
     t1 = poseestim.PoseEstimation()
 
@@ -66,13 +66,6 @@ def level2():
 
     feed.update_frame(t1.image)
         
-    sleep(1)
     t1.change_exercise(2)
 
-    feed.update_frame(t1.image)
-
-    t1.stop()
-
-    t1.join()
-
-    return feed
+    return feed, t1

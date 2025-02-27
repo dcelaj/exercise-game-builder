@@ -10,7 +10,7 @@ Eventually I hope to make a C library to port MediaPipe into a proper game engin
 
 The project file structure is as follows:
 
-- The **assets** folder contains the game art and sound, along with a few other misc items.
+- The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets.
 - The **models** folder contains the machine learning models used in the game.
 - The **output** folder is used to collect any file outputs, mainly for debugging or final packaging.
 - The **source folder** contains all the python code and modules.
@@ -67,3 +67,11 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
 I organized everything to the best of my ability to make things easier for anybody who might want to build off of this in the future. My main goal was to keep levels.py as isolated as possible for people who just want to make some fun games, while also making the rest neat and legible for those who want to dig more into the wiring or change the GUI.
 
 Ultimately this is meant to be a tool for building body tracking games, albeit a simple one.
+
+### Possible improvements / TODO
+
+- [ ] Consider moving MediaPipe's image annotation to helpers.py to spread the loads between threads more evenly
+    - I think I'm **not** going to do this, because it would be messier and harder to use
+    - Performance increase also not likely too significant - may be worth some tests though
+- [ ] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
+    - I can't image this isn't being done, since accepting different resolutions would complicate the neural net hevaily. But worth checking.

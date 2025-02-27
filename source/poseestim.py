@@ -14,7 +14,7 @@ PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-# TODO: see if more elegant way to handle path
+# TODO: see if more elegant way to handle path... maybe make enum?
 model_path = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_full.task'
 
 # MediaPipe visualization functions 
@@ -47,22 +47,21 @@ options = PoseLandmarkerOptions(
     running_mode=VisionRunningMode.VIDEO)
 
 # Main pose estimation function
-def estimate_pose(cap, landmarker):
+def estimate_pose(cap, landmarker): # TODO: don't worry about type hinting, will move into class anyway
+    '''
+    '''
     # Get image frame and time from video feed
-    ret, frame = cap.read()
+    ret, cv_frame = cap.read()
     timestamp_ms = int(cap.get(cv2.CAP_PROP_POS_MSEC))
 
     # Convert the frame received from OpenCV to a MediaPipe’s Image object.
-    frame.flags.writeable = False 
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv_frame)
 
-    # Send live image data to perform pose landmarking asynchronously
+    # Send live image data to perform pose landmarking - treating it as video
+    # rather than live feed because blocking makes things simpler than async
     pose_landmarker_result = landmarker.detect_for_video(mp_image, timestamp_ms)
-    frame.flags.writeable = True 
-    # The purpose of the two frame.flags lines is it supposedly forces py to work via reference
-    # and makes it go faster. If stuff goes awry, those are the first two suspects to delete
 
-    return mp_image, pose_landmarker_result
+    return cv_frame, mp_image, pose_landmarker_result 
 
 # Exercise detection using MediaPipe output
 # TODO: write the damn function
@@ -79,7 +78,8 @@ class PoseEstimation(Thread):
 
     # READ-ONLY Public Variables
     cap = None                      # Holds CV2's video capture feed
-    image = None                    # Holds MP image info converted from a cap video feed frame
+    frame = None                    # Holds raw CV2 video frame
+    mp_image = None                 # Holds MP image info converted from a cap video feed frame
     mp_results = None               # Holds all the results of the MediaPipe inference
     ex_results = None               # Can also be accessed by results.pose_landmarks.landmark
     exercise_list = Enum(           # Holds an enum list of all available exercises
@@ -98,30 +98,36 @@ class PoseEstimation(Thread):
         Thread.__init__(self)
         self.exercise = exercise
         self.showcam = showcam
-
     
     # Running the pose estimation followed by exercise detection in continuous loop
     def run(self):
         # Setup VIDEO FEED
         self.cap = cv2.VideoCapture(0)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-        # Create MediaPipe object and start detection loop
+        # Create MediaPipe object
         with PoseLandmarker.create_from_options(options) as landmarker:
+            # Start detection loop
             while not self._stop_event.is_set() and self.cap.isOpened():
-                # Perform pose estimation and store results
-                temp_img, self.mp_results = estimate_pose(self.cap, landmarker)
-                self.image = temp_img # TODO: delete after testing
-                # Use results to draw the landmark, store that
-                # TODO: add in option for blackout cam and no cam at all for faster speed
-                #self.image = draw_landmarks_on_image(temp_img, self.mp_results)
-                print(self.mp_results)
-
-                # Perform exercise detection, store result
-                # TODO: Write the detect exercise as an out of class function maybe make ex results a list and give it to func to pop to
+                # Perform pose estimation and store updated results
+                self.frame, self.mp_image, self.mp_results = estimate_pose(self.cap, landmarker)
+                
+                # TODO: Perform exercise detection, store classification results in a FIFO buffer list
+                # ex_results, which can then be read, if x most recent results same, then det is confirm
                 detect_exercise(self.exercise)
 
         print(f"Thread finished")
         return 0
+    
+    # Get annotate image (or just draw on pure black)
+    def get_annotated_image(self):
+        # TODO: write this, check showcam variable too
+        print("TODO")
+    
+    # Get flipped frame and/or annotated image for better self viewing
+    def get_flipped_visuals(self):
+        # TODO: write this
+        print("TODO")
 
     # Changes the exercise being detected
     def change_exercise(self, new_exercise):
