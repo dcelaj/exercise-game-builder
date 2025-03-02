@@ -1,8 +1,6 @@
 models/mediapipe
 source/test.py
-source/ml_output_dummy.txt
-assets/BG_Assets.blend
-assets/BG_Assets.blend1
+assets/misc/*.blend1
 assets/desktop.ini
 assets/characters/desktop.ini
 TODO.txt

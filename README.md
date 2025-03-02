@@ -1,6 +1,6 @@
 # Exercise Game Builder
 
-This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6** and **Qt** for the GUI and event loop, the open source **MediaPipe** project (which itself uses absl-py, attrs, flatbuffers, jax/jaxlib, matplotlib, numpy, opencv, protobuf, sounddevice, sentencepiece) to achieve the pose estimation, and **PyInstaller** to package everything.
+This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6**/**Qt** for the GUI, the open source **MediaPipe** project (which itself uses absl-py, attrs, flatbuffers, jax/jaxlib, matplotlib, numpy, opencv, protobuf, sounddevice, sentencepiece) to achieve the pose estimation, **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
 I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, feel free to use any of this code to make a proper game (just abide by the licensing rules of the packages used). As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself. 
 
@@ -26,7 +26,6 @@ The source folder contains:
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
-    - The asyncestim.py file is a WIP
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
 
 ## Credits
@@ -40,6 +39,8 @@ Finally, while I didn't directly reference any code from these, [William Sokol's
 </br>
 
 ## How does it work?
+
+### Structure
 
 The **main thread in app.py** calls the startup function in levels.py to start a level (still on main thread rn, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
 
@@ -61,6 +62,17 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
             |_____________|_______________|
              only to tell them start/stop
 
+<br>
+
+###  Machine Learning Models 
+
+This program uses machine learning to detect and classify the user's input. The actual machine learning models used in poseestim.py consist of MediaPipe's pose estimation model (to get the position of various body points) and a subsequent **Random Forest** model (to classify the exercise based on those points) made with Scikit Learn. MediaPipe's pose estimation architecture is based on **[BlazePose](http://arxiv.org/pdf/2006.10204)**, which is itself a **convolutional neural network**.
+
+**Addendum:** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from unconsenting netizens to train their models. In addition to this being a violation of privacy, it also results in undocumented training datasets which cannot be easily checked for bias. 
+
+I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use. However, as the scale of the dataset is small enough to where they have all been human labelled, I would hope the researchers have taken the proper ethical considerations.
+
+<br>
 
 ### Why go through all these hoops instead of just doing everything in app.py?
 
@@ -68,10 +80,14 @@ I organized everything to the best of my ability to make things easier for anybo
 
 Ultimately this is meant to be a tool for building body tracking games, albeit a simple one.
 
+<br>
+
 ### Possible improvements / TODO
 
-- [ ] Consider moving MediaPipe's image annotation to helpers.py to spread the loads between threads more evenly
+- [x] Consider moving MediaPipe's image annotation to helpers.py to spread the loads between threads more evenly
     - I think I'm **not** going to do this, because it would be messier and harder to use
     - Performance increase also not likely too significant - may be worth some tests though
-- [ ] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
-    - I can't image this isn't being done, since accepting different resolutions would complicate the neural net hevaily. But worth checking.
+- [x] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
+    - I can't image this isn't being done, since accepting different resolutions would complicate the neural net heavily. But worth checking.
+    - Haven't been able to find concrete confirmation, but I'm 99% sure it resizes internally, so **no action** will be taken.
+- [ ] Look into using skl2onnx over joblib for better security and optimization
