@@ -59,13 +59,13 @@ def level1():
 def level2(): # still just testing these level funcs normally wouldnt return anything
     feed = helpers.PlayerFeed() #maybe eventually pass it dimensions
 
-    t1 = poseestim.PoseEstimation()
+    t1 = poseestim.Pose_Estimation()
 
     t1.start()
     sleep(1)
 
     feed.update_frame(t1.image)
         
-    t1.change_exercise(2)
+    t1.set_exercise(2)
 
     return feed, t1

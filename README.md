@@ -1,6 +1,6 @@
 # Exercise Game Builder
 
-This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6**/**Qt** for the GUI, the open source **MediaPipe** project (which itself uses absl-py, attrs, flatbuffers, jax/jaxlib, matplotlib, numpy, opencv, protobuf, sounddevice, sentencepiece) to achieve the pose estimation, **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
+This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6**/**Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Numpy** and **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
 I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, feel free to use any of this code to make a proper game (just abide by the licensing rules of the packages used). As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself. 
 
@@ -12,6 +12,8 @@ The project file structure is as follows:
 
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets.
 - The **models** folder contains the machine learning models used in the game.
+    - You'll have to download the mediapipe model with the link in the text file provided.
+    - The exercise detection model I've created is included, along with some helper files I used to make the exercise detector if you want to train your own - more info is in the file comments.
 - The **output** folder is used to collect any file outputs, mainly for debugging or final packaging.
 - The **source folder** contains all the python code and modules.
 - The plan png file is a **REALLY** rough sketch of how everything was set up and planned.
@@ -66,7 +68,9 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
 
 ###  Machine Learning Models 
 
-This program uses machine learning to detect and classify the user's input. The actual machine learning models used in poseestim.py consist of MediaPipe's pose estimation model (to get the position of various body points) and a subsequent **Random Forest** model (to classify the exercise based on those points) made with Scikit Learn. MediaPipe's pose estimation architecture is based on **[BlazePose](http://arxiv.org/pdf/2006.10204)**, which is itself a **convolutional neural network**.
+This program uses machine learning to detect and classify the user's input. The actual machine learning models used in poseestim.py consist of MediaPipe's pose estimation model (to get the position of various body points) and a subsequent **[Random Forest](https://en.wikipedia.org/wiki/Random_forest)** model (to classify the exercise based on those points) made with Scikit Learn. MediaPipe's pose estimation architecture is based on **[BlazePose](http://arxiv.org/pdf/2006.10204)** and **[MobileNetV2](https://arxiv.org/pdf/1801.04381)**, which are both **[Convolutional Neural Networks](https://en.wikipedia.org/wiki/Convolutional_neural_network)**.
+
+If you plan to create your own models to detect different kinds of poses as input, a helper file is included to capture pose data and a training file for creating a random forest classifier in scikit using that data. You can use a different model - just update the exercise detection function in the Pose_Estimation class to use your own model (make sure to import the proper libraries if you aren't using scikit learn). I personally recomment sticking to a random forest classifier, as it's generally good "out of the box" when it comes to high dimensional data with few training examples, and inference calculation time is relatively fast compared to other multi-class classifiers. That being said, ML model performance depends on a ton of factors and can often be counterintuitive - if you build a model that works particularly well, please feel free to share it!
 
 **Addendum:** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from unconsenting netizens to train their models. In addition to this being a violation of privacy, it also results in undocumented training datasets which cannot be easily checked for bias. 
 
