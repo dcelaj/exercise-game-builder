@@ -28,6 +28,9 @@ This should not be accessed by pose estim, nor pose estim by this.
 This essentially contains some custom UI elements and animations to move around sprites.
 '''
  
+# TODO: ADD MEDIAPIPE ANNOTATION OR MAKE YOUR OWN FUNC
+# TODO: POTENTIALLY ADD CHECK TO SEE IF FRAME EVEN UPDATED BEFORE WRITING TO GUI
+# TODO: DEFINITELY add that check to the drawing annotations function if you make a custom one
 
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
 class PlayerFeed(QWidget):

@@ -3,11 +3,22 @@ This uses scikit learn to make a random forest classifier based on all the pose 
 The model, once finished training, will be exported using joblib (or ONNX but that's
 for later optimization.)
 
-I considered using google's tensorflow (or the new dedicated decision tree library),
-but since I couldn't find any resources on whether they were supported by tensorflow
-Lite (the format media pipe uses), I figured it would end up in a different format
-anyway, and more people know sklearn.
-
-I've added it to a global helper func, so if you wanna change over to tensor flow,
-just edit the exercise detection helper func in poseestim and leave the class alone.
+rn just makes some dummy data for testing
 '''
+
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+
+# Create dummy data
+X_dummy = np.random.rand(1000, 33) # 1000 random dummy points, each having 33 features/dimensions
+y_dummy = np.random.randint(3, size=1000) # 3 cateogries
+
+# Initialize and train the Random Forest model
+dummy_rf_model = RandomForestClassifier()
+dummy_rf_model.fit(X_dummy, y_dummy)
+
+# Save the dummy model using joblib
+joblib.dump(dummy_rf_model, 'dummy_big_rf_model.joblib')
+
+print("Dummy Random Forest model created and saved successfully!")

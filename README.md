@@ -1,10 +1,10 @@
 # Exercise Game Builder
 
-This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6**/**Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Numpy** and **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
+This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Numpy** and **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
 I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, feel free to use any of this code to make a proper game (just abide by the licensing rules of the packages used). As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself. 
 
-Eventually I hope to make a C library to port MediaPipe into a proper game engine like Godot, but for now this serves as a solid first step.
+Eventually I hope to make a C library to port MediaPipe into a proper game engine like Godot, but for now this serves as a solid first step. 
 
 ## Project Structure
 
@@ -13,7 +13,7 @@ The project file structure is as follows:
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets.
 - The **models** folder contains the machine learning models used in the game.
     - You'll have to download the mediapipe model with the link in the text file provided.
-    - The exercise detection model I've created is included, along with some helper files I used to make the exercise detector if you want to train your own - more info is in the file comments.
+    - The exercise detection model I've created is included with some helper files - info in the helper comments.
 - The **output** folder is used to collect any file outputs, mainly for debugging or final packaging.
 - The **source folder** contains all the python code and modules.
 - The plan png file is a **REALLY** rough sketch of how everything was set up and planned.
@@ -23,6 +23,7 @@ The project file structure is as follows:
 The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
+- **enumoptions.py** just contains some enums for more readable options.
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the function for the game logic, and slightly edit the starter function (designed to be called from the main GUI and start both the pose estimation thread and the thread for the aforementioned game logic). 
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
@@ -34,7 +35,7 @@ The source folder contains:
 
 In addition to all the packages and technologies which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide and [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt.
 
-Finally, while I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version).
+While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version).
 
 </br>
 <hr>
@@ -90,8 +91,11 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 
 - [x] Consider moving MediaPipe's image annotation to helpers.py to spread the loads between threads more evenly
     - I think I'm **not** going to do this, because it would be messier and harder to use
-    - Performance increase also not likely too significant - may be worth some tests though
+    - **BUT** I will leave it as a global function *outside* the poseestim thread, which the game logic thread can use to draw. This doesn't change any imports either.
+    - Might consider making a custom one in helpers for more style
 - [x] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
     - I can't image this isn't being done, since accepting different resolutions would complicate the neural net heavily. But worth checking.
-    - Haven't been able to find concrete confirmation, but I'm 99% sure it resizes internally, so **no action** will be taken.
-- [ ] Look into using skl2onnx over joblib for better security and optimization
+    - Blazepose paper says it does, so **no action** will be taken.
+- [ ] Consider adding a check to see if (upon attempting to grab a new frame **for player video portrait**) you're actually changing the image or performing operations for nothing.
+    - Not sure how computationally intensive repainting a duplicate frame even is compared to checking if two images are the same ... maybe carry out further tests later on if FPS gets low - **or maybe just paint the frame once every n game loop cycles if repainting slows down the GUI thread.**
+- [ ] Look into using skl2onnx over joblib for better security - **high priority**

@@ -1,12 +1,12 @@
-from enum import Enum, StrEnum
+import enumoptions as op
 from threading import Thread, Event
-from time import sleep
-
-import cv2
+from collections import deque
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe import solutions
 import mediapipe as mp
+import cv2
 import numpy as np
+import joblib
 
 # MediaPipe abbreviations
 BaseOptions = mp.tasks.BaseOptions
@@ -38,60 +38,6 @@ def draw_landmarks_on_image(rgb_image, detection_result):
       solutions.drawing_styles.get_default_pose_landmarks_style())
   return annotated_image
 
-# Enums for settings to be used in my custom class - recommend importing pose estim as pe and doing pe.Exercises.whatever
-class Exercises(Enum): # Edit only needed if making new exercise
-    JUMPING_JACK = 0 
-    HIGH_KNEES = 1
-    LEG_RAISE = 2
-    ARMCIRCLES = 3
-    SQUAT = 4
-    DEADLIFT = 5
-    PLANK = 6
-    PUSHUP = 7
-    CRUNCH = 8
-    LAT_RAISE = 9
-    OVERHEAD_PRESS = 10 
-    CURL = 11
-    TRICEP_EXTENSION = 12
-class Body_Parts(Enum): # MediaPipe's result numbering
-    NOSE = 0
-    LEFT_EYE_INNER = 1
-    LEFT_EYE = 2
-    LEFT_EYE_OUTER = 3
-    RIGHT_EYE_INNER = 4
-    RIGHT_EYE = 5
-    RIGHT_EYE_OUTER = 6
-    LEFT_EAR = 7
-    RIGHT_EAR = 8
-    MOUTH_LEFT = 9
-    MOUTH_RIGHT = 10
-    LEFT_SHOULDER = 11
-    RIGHT_SHOULDER = 12
-    LEFT_ELBOW = 13
-    RIGHT_ELBOW = 14
-    LEFT_WRIST = 15
-    RIGHT_WRIST = 16
-    LEFT_PINKY = 17
-    RIGHT_PINKY = 18
-    LEFT_INDEX = 19
-    RIGHT_INDEX = 20
-    LEFT_THUMB = 21
-    RIGHT_THUMB = 22
-    LEFT_HIP = 23
-    RIGHT_HIP = 24
-    LEFT_KNEE = 25
-    RIGHT_KNEE = 26
-    LEFT_ANKLE = 27
-    RIGHT_ANKLE = 28
-    LEFT_HEEL = 29
-    RIGHT_HEEL = 30
-    LEFT_FOOT_INDEX = 31
-    RIGHT_FOOT_INDEX = 32
-class Model_Paths(StrEnum): # Paths to MediaPipe model used - TODO: consider os.path.join('..', 'models', 'target_file.txt')
-    LITE = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_lite.task'
-    FULL = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_full.task'
-    HEAVY = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_heavy.task'
-
 # Main Pose Estimation & Exercise Detection Thread
 class Pose_Estimation(Thread):
     '''
@@ -102,14 +48,15 @@ class Pose_Estimation(Thread):
     # Protected Class Variable - Singleton Pattern
     _exists = False                           # Is there already an instance of this class in existence? 
 
-    # Constructor & Inputs
-    def __init__(self, exercise=Exercises.CRUNCH.value, showcam=False, model_path=Model_Paths.FULL.value):
-        # Calling Thread constructor
+    # Constructor, Inputs, & Variables
+    def __init__(self, exercise=op.Exercises.CRUNCH.value, cam_style=op.Cam_Style.SKELETON.value, 
+                 mp_model_path=op.Model_Paths.MP_FULL.value, ex_model_path=op.Model_Paths.EX_DEFAULT.value):
+        # Calling Thread parent class constructor
         super().__init__()
 
         # Setting up variables
         self.exercise = exercise              # Can change DYNAMICALLY - corresponds to the exercise the level is detecting from the list
-        self.showcam = showcam
+        self.cam_style = cam_style
 
         # READ-ONLY Public Variables
         self.cap = None                       # Holds CV2's video capture feed bject
@@ -117,22 +64,26 @@ class Pose_Estimation(Thread):
         self.mp_image = None                  # Holds MP image info converted from a cap video feed frame
         self.mp_results = None                # Holds all the results of the MediaPipe inference
         self.mp_mask = None                   # Holds body shape image mask returned by MediaPipe
-        self.ex_results = None                # Can also be accessed by results.pose_landmarks.landmark
+        self.ex_results = deque(maxlen=32)    # Holds the most recent 32 results of exercise detection (last ~2 secs)
 
         # Protected variables
         self._stop_event = Event()            # Just an event flag for graceful exit
+        self._ex_model = joblib.load(         # Loading exercise model
+            ex_model_path)
         self._options = PoseLandmarkerOptions(# MediaPipe settings
-            base_options=BaseOptions(model_asset_path=model_path),
+            base_options=BaseOptions(model_asset_path=mp_model_path),
             running_mode=VisionRunningMode.VIDEO)
-        Pose_Estimation._exists = True         # Singleton Pattern - so only one instance exists at a time
+        Pose_Estimation._exists = True        # Singleton Pattern - so only one instance exists at a time
     
-    # Main Pose Estimation Function TODO: 
+    # Pose Estimation Call
     def _estimate_pose(self, cap, landmarker):
         '''
-        Although this is technically an instance method, for data safety, it is being treated as a foreign call.
-        This allows us to return the results and update the internal variables all at once.
+        Uses the video feed capture and mediapipe landmarker objects (see 'def run(self):') to estimate pose and 
+        body landmark position.
 
-        It is placed inside the class purely for organizational reasons.
+        Although this is technically an instance method, for data safety, it is being treated as an outside call. 
+        This allows us to return the results and update the internal variables all at once. It is placed inside 
+        the class purely for organizational reasons.
         '''
 
         # Get image frame and time from video feed
@@ -147,31 +98,33 @@ class Pose_Estimation(Thread):
         pose_landmarker_result = landmarker.detect_for_video(mp_image, timestamp_ms)
 
         # TODO: Add image mask option
-        mask = None
+        if self.cam_style == op.Cam_Style.MASK.value:
+            mask = None
+        else:
+            mask = None
 
         # Return the results
         return cv_frame, mp_image, pose_landmarker_result, mask
 
-    # Main Exercise Detection Function TODO: 
+    # Exercise Detection Function TODO: 
     def _detect_exercise(self):
         '''
-        TODO: make the damn model
-        # TODO: Perform exercise detection, store classification results in a FIFO buffer list
+        # TODO: FORMAT THE DAMN OUT FROM THE ACTUAL NN TO INPUT HERE 
+        # Perform exercise detection, store classification results in a FIFO buffer list
         ex_results, which can then be read, if x most recent results same, then det is confirm
         '''
-        print("TODO")
-        dummy = [True, True, True, True, True]
-        return dummy
+        # Clean up MP results format
+        dummy_input = np.random.rand(1, 33)
+        prediction = self._ex_model.predict(dummy_input)
+        self.ex_results.append(prediction)
     
-    #
-    # Running the pose estimation followed by exercise detection in continuous loop
-    #
+    # Main Function - Running the pose estimation followed by exercise detection in continuous loop
     def run(self):
         # Set up video feed
         self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-        # Create MediaPipe object
+        # Create MediaPipe landmarker object (initializes WASM runtime then makes class isntance)
         with PoseLandmarker.create_from_options(self._options) as landmarker:
             # Start detection loop
             while not self._stop_event.is_set() and self.cap.isOpened():
@@ -179,25 +132,31 @@ class Pose_Estimation(Thread):
                 self.frame, self.mp_image, self.mp_results, self.mp_mask = self._estimate_pose(self.cap, landmarker)
                 
                 # Use those results to detect if an exercise is being properly done
-                self.ex_results = self._detect_exercise()
+                self._detect_exercise()
 
         print(f"Thread finished")
         return 0
     
+    #
+    # Below this point are public functions - ones that are meant to be called repeatedly, anyway
+    #
+
     # Get annotate image, mask, or just draw on pure black TODO: move or make call here
-    def get_annotated_image(self):
+    def get_results(self):
         '''
-        note that if you want non annotated or raw data, just do instance_name.var, this only to perform annottn
-        see class explanation or constructor for list of vars you can access
+        EXPLAIN THAT YOU SHOULD JUST ACCESS THE INSTANCE VARIABLES DIRECTLY
+        this is more for troubleshooting, but it does return the results
+        also explain if you want drawing/annotation, look to helpers for custom, 
+        or maybe just use the mediapipe default global function from this file - not ran from thread, just the global func
         '''
         # TODO: write this, check showcam variable too
         # TODO: ADD OPTION FOR GETTING IMG MASK TOO
         print("TODO")
     
     # Get a specific result, like a body part TODO: this
-    def get_body_part(self):
+    def get_body_part(self, body_part=op.Body_Parts.NOSE.value):
         '''
-        Explain enum options - note in the future you can just instance_name.exercise to get/set
+        Explain enum options - and return specific body part coordinate - default returns nose
         '''
         # TODO: write this
         print("TODO")
@@ -205,8 +164,11 @@ class Pose_Estimation(Thread):
     # Changes the exercise being detected
     def set_exercise(self, new_exercise):
         '''
-        Explain enum options - note in the future you can just instance_name.exercise to get/set if you know the options
+        Explain enum options and return data types depending on result
+        also explain this just does an extra clear, you can set thread1.exercise directly
         '''
+        # Clear results for new data types to come through
+        self.ex_results.clear()
         self.exercise = new_exercise
     
     # Gracefully exits
