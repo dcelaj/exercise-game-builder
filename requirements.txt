@@ -1,4 +1,6 @@
 mediapipe
 pyside6
 scikit-learn
+playsound
+pandas
 pyinstaller

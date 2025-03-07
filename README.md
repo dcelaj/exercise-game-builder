@@ -1,6 +1,6 @@
 # Exercise Game Builder
 
-This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Numpy** and **Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
+This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Pandas, Numpy, and Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
 I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, feel free to use any of this code to make a proper game (just abide by the licensing rules of the packages used). As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself. 
 
@@ -30,13 +30,13 @@ The source folder contains:
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
     - It also contains the signal handler function, which is needed for the different threads to safely interact with the QT GUI.
-- **enumoptions.py** contains some enums for more readable options AND ALSO FILE PATHS. **EVERYONE WILL NEED TO CHANGE THIS FOR IT TO WORK, UNTIL I IMPLEMENT THE RELATIVE FILE PATHS.**
+- **enumoptions.py** contains some enums for more readable options and also file path stuff.
 
 ## Credits
 
 In addition to all the packages and technologies which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide and [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt.
 
-While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version).
+While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version, his video had some pretty valuble insight that MediaPipe's documentation lacks).
 
 </br>
 <hr>
@@ -76,7 +76,7 @@ If you plan to create your own models to detect different kinds of poses as inpu
 
 **Addendum:** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from unconsenting netizens to train their models. In addition to this being a violation of privacy, it also results in undocumented training datasets which cannot be easily checked for bias. 
 
-I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use. However, as the scale of the dataset is small enough to where they have all been human labelled, I would hope the researchers have taken the proper ethical considerations.
+I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, I would hope the researchers have taken the proper ethical considerations.
 
 <br>
 
@@ -97,7 +97,9 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [x] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
     - I can't image this isn't being done, since accepting different resolutions would complicate the neural net heavily. But worth checking.
     - Blazepose paper says it does, so **no action** will be taken.
+- [x] Implement relative file paths for using the models - **done**
 - [ ] Consider adding a check to see if (upon attempting to grab a new frame **for player video portrait**) you're actually changing the image or performing operations for nothing.
     - Not sure how computationally intensive repainting a duplicate frame even is compared to checking if two images are the same ... maybe carry out further tests later on if FPS gets low - **or maybe just paint the frame once every n game loop cycles if repainting slows down the GUI thread.**
+    - similarly, maybe add a head visibility check for the data gatherer py file
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
-- [ ] Implement relative file paths for using the models - **HIGHEST PRIORITY**
+

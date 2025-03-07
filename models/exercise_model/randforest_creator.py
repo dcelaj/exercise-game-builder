@@ -15,8 +15,8 @@ into a single DataFrame object and uses that to train the model.
 
 # CSV File Locations
 csv0 = os.path.join(enumop2.root_dir, 'models', 'exercise_model', 'c0.csv')
-csv1 = 'path'
-csv2 = 'path'
+csv1 = os.path.join(enumop2.root_dir, 'models', 'exercise_model', 'c1.csv')
+csv2 = os.path.join(enumop2.root_dir, 'models', 'exercise_model', 'c2.csv')
 # This code looks in exercise_model folder for files named 'c0.csv' 'c1.csv' 'c2.csv' - if your files are in this folder,
 # all you have to do is replace the last argument with the name of your file. You can also just paste in the absolute file 
 # path as a string.
@@ -95,7 +95,8 @@ pose_data_train, pose_data_test, pose_class_train, pose_class_test = train_test_
 
 # Initialize and train the Random Forest model
 rf_model = RandomForestClassifier()
-rf_model.fit(pose_data_train, pose_class_train)
+rf_model.fit(pose_data_train.values, pose_class_train.values)
+#                             ^^^ doing .values because real time input wont have labels
 
 # Evaluate the model
 accuracy = rf_model.score(pose_data_test, pose_class_test)

@@ -83,6 +83,12 @@ def preprocess(result):
     # each body point landmark corresponding to some four consecutive values
     return parsed_list
 
+def exercise_specific_processing(ex):   #TODO: delete this and incorproate support for switching exercise model mid game
+    # TODO: actually incorporate some exercise specific stuff, whether it be switching the model or preprocessing
+    # TODO: should also probably alter the other funcs to accommodate this instead of making this whole new func
+    # TODO: It's moreso a reminder than anything else
+    pass
+
 # Main Pose Estimation & Exercise Detection Thread
 class Pose_Estimation(Thread):
     '''
@@ -157,7 +163,7 @@ class Pose_Estimation(Thread):
         return cv_frame, mp_image, pose_landmarker_result, mask
 
     # Exercise Detection Function 
-    def _detect_exercise(self, mp_res):
+    def _detect_exercise(self, mp_rslt, exrcs):
         '''
         Just calls a cleanup function for data preprocessing, then calls the joblib RF model and
         feeds it the cleaned up data. Then hands back the prediction to be appended to FIFO deque
@@ -165,13 +171,16 @@ class Pose_Estimation(Thread):
         Takes the mp results object as input. Yes this could have just used self., but this feels
         better for data safety convention.
         '''
+        # TODO: Incorporate ability to switch between exercise model mid game
+        
         # Clean up MP results format
-        clean = preprocess(mp_res)
+        clean = preprocess(mp_rslt)
 
         # Check if there was a detection, then feed into model to get prediction
         if clean is not None:
-            prediction = self._ex_model.predict(clean)
-            prediction = 1
+            # making into numpy array so it can be fed into model and reshape to show single sample
+            input = np.array(clean).reshape(1, -1) 
+            prediction = self._ex_model.predict(input)
         else:
             # If nothing could be detected, manually make prediction false
             prediction = 0
@@ -191,7 +200,7 @@ class Pose_Estimation(Thread):
                 self.frame, self.mp_image, self.mp_results, self.mp_mask = self._estimate_pose(self.cap, landmarker)
                 
                 # Use those results to detect if an exercise is being properly done
-                predict = self._detect_exercise(self.mp_results)
+                predict = self._detect_exercise(self.mp_results, self.exercise)
                 self.ex_results.append(predict)
 
         print(f"Thread finished")
