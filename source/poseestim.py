@@ -14,7 +14,7 @@ PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-# MediaPipe visualization functions TODO: make some more fun customization options
+# MediaPipe visualization functions 
 def draw_landmarks_on_image(rgb_image, detection_result):
   '''
   Draw pose tracking landmarks on any image
@@ -38,11 +38,61 @@ def draw_landmarks_on_image(rgb_image, detection_result):
       solutions.drawing_styles.get_default_pose_landmarks_style())
   return annotated_image
 
+# DATA CLEANUP AND PREPROCESSING FUNCTION - making MP's esoteric return readable for the RF model
+def preprocess(result):
+    '''
+    Reformats **MediaPipe Results object** into ordered list of numbers. If no
+    detection, returns None, otherwise returns a list.
+
+    Might be worth adding in a check for head visibility (points 1 thru 10) and
+    discarding them if too low. The BlazePose neural network architecture that
+    MediaPipe relies on uses face detection as a proxy for person detection, so
+    points that can't detect a face may be unreliable.  
+    '''
+    # Abbreviation for...
+    body_pt = mp.solutions.pose.PoseLandmark        # the body landmark enumerations in mediapipe
+    pose_landmarks_list = result.pose_landmarks     # the result list in the media pipe return
+    # Values our model will ignore - basically eyes, lips, hands, and feet
+    ignore = [1, 2, 3, 4, 5, 6, 9, 10, 17, 18, 19, 20, 21, 22, 29, 30, 31, 32]
+    # What we return
+    parsed_list = []
+
+    # INPUT HANDLING AND DATA DISCARDING 
+    # TODO: Implement discarding the invisible head data - have a lot of pts to check, 0-10
+    # Maybe for efficiency only check nose vis (point 0) 
+    if (len(pose_landmarks_list) == 0) or (False):
+        return None
+
+    # Parsing the results object that google has insanely poor documentation for
+    # to extract the landmark values we're interested int
+    for idx in range(len(pose_landmarks_list)):
+        pose_landmarks = pose_landmarks_list[idx]   # for some god unknown reason it's a 2d list with only one column
+
+        # Loop through the inner list of landmarks and add each value to the list
+        for part in body_pt:
+            # Only the values we care about
+            if part.value not in ignore:
+                parsed_list.append(pose_landmarks[part.value].x)
+                parsed_list.append(pose_landmarks[part.value].y)
+                parsed_list.append(pose_landmarks[part.value].z)
+                parsed_list.append(pose_landmarks[part.value].visibility)
+            else:
+                pass
+    
+    # Return simple list of numbers corresponding to [x coord, y coord, visibility, x coord, y coord, visibility...]
+    # each body point landmark corresponding to some four consecutive values
+    return parsed_list
+
 # Main Pose Estimation & Exercise Detection Thread
 class Pose_Estimation(Thread):
     '''
     A dedicated pose estimation and exercise detection thread class, subclass of threading.Thread.
     Reads camera input and performs passes of machine learning on the output all in its own thread.
+
+    Arguments:
+    - exercise: 
+    READ-ONLY Public Variables:
+    Protected Variables:
     '''
 
     # Protected Class Variable - Singleton Pattern
@@ -106,17 +156,26 @@ class Pose_Estimation(Thread):
         # Return the results
         return cv_frame, mp_image, pose_landmarker_result, mask
 
-    # Exercise Detection Function TODO: 
-    def _detect_exercise(self):
+    # Exercise Detection Function 
+    def _detect_exercise(self, mp_res):
         '''
-        # TODO: FORMAT THE DAMN OUT FROM THE ACTUAL NN TO INPUT HERE 
-        # Perform exercise detection, store classification results in a FIFO buffer list
-        ex_results, which can then be read, if x most recent results same, then det is confirm
+        Just calls a cleanup function for data preprocessing, then calls the joblib RF model and
+        feeds it the cleaned up data. Then hands back the prediction to be appended to FIFO deque
+
+        Takes the mp results object as input. Yes this could have just used self., but this feels
+        better for data safety convention.
         '''
         # Clean up MP results format
-        dummy_input = np.random.rand(1, 33)
-        prediction = self._ex_model.predict(dummy_input)
-        self.ex_results.append(prediction)
+        clean = preprocess(mp_res)
+
+        # Check if there was a detection, then feed into model to get prediction
+        if clean is not None:
+            prediction = self._ex_model.predict(clean)
+            prediction = 1
+        else:
+            # If nothing could be detected, manually make prediction false
+            prediction = 0
+        return prediction
     
     # Main Function - Running the pose estimation followed by exercise detection in continuous loop
     def run(self):
@@ -132,7 +191,8 @@ class Pose_Estimation(Thread):
                 self.frame, self.mp_image, self.mp_results, self.mp_mask = self._estimate_pose(self.cap, landmarker)
                 
                 # Use those results to detect if an exercise is being properly done
-                self._detect_exercise()
+                predict = self._detect_exercise(self.mp_results)
+                self.ex_results.append(predict)
 
         print(f"Thread finished")
         return 0
@@ -141,7 +201,7 @@ class Pose_Estimation(Thread):
     # Below this point are public functions - ones that are meant to be called repeatedly, anyway
     #
 
-    # Get annotate image, mask, or just draw on pure black TODO: move or make call here
+    # Dump all results (mainly for troubleshooting)
     def get_results(self):
         '''
         EXPLAIN THAT YOU SHOULD JUST ACCESS THE INSTANCE VARIABLES DIRECTLY
@@ -157,6 +217,7 @@ class Pose_Estimation(Thread):
     def get_body_part(self, body_part=op.Body_Parts.NOSE.value):
         '''
         Explain enum options - and return specific body part coordinate - default returns nose
+        So levels.py user won't have to deal with mediapipe's esoteric formatting and documentation
         '''
         # TODO: write this
         print("TODO")

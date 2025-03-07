@@ -1,5 +1,6 @@
 models/mediapipe
-models/exercise_tf/mltest.py
+models/exercise_model/mltest.py
+models/exercise_model/*.csv
 source/test.py
 assets/misc/*.blend1
 assets/desktop.ini

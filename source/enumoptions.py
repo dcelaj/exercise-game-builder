@@ -1,10 +1,28 @@
 from enum import Enum, StrEnum
+from pathlib import Path
+import os
 
 '''
 CONTAINS ENUM CLASSES HOLDING VARIOUS OPTIONS USED THROUGHOUT THE PROJECT
 
-The project mostly uses the .value so this is for readability more than anything.
+The project mostly uses the .value so this is for readability more than anything. Also for tidying relative paths.
 '''
+
+# Resolving project file paths
+#
+#
+# Resolving the root project directory (in this case, we are 2 layers in so we call parent twice)
+root_dir = Path(__file__).resolve().parent.parent
+
+# specifying subfolders from project root
+lite_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_lite.task')
+full_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_full.task')
+heavy_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_heavy.task')
+
+exercise_test = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest_ex.joblib')
+#
+#
+#
 
 # Exercises supported for detection
 class Exercises(Enum): # Edit only needed if making new exercise
@@ -66,12 +84,12 @@ class Cam_Style(Enum):
     MASK = 3                # Most resource intensive, has mediapipe return an output mask of player's silhouette
     STILL_IMG = 4           # Least resource intensive, returns no camera feed - will allow player to import a pfp
 
-# TODO: consider os.path.join('..', 'models', 'target_file.txt')
+
 class Model_Paths(StrEnum): 
     # Paths to MediaPipe model used
-    MP_LITE = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_lite.task'
-    MP_FULL = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_full.task'
-    MP_HEAVY = 'E:/Projects/exercise-testgame/models/mediapipe/pose_landmarker_heavy.task'
+    MP_LITE = lite_mp_path
+    MP_FULL = full_mp_path
+    MP_HEAVY = heavy_mp_path
 
     # Paths to custom exercise model used
-    EX_DEFAULT = 'E:/Projects/exercise-testgame/models/exercise_tf/dummy_big_rf_model.joblib'
+    EX_DEFAULT = exercise_test

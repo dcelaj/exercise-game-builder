@@ -25,12 +25,17 @@ import sys
 This is gonna be helper functions to be used in the levels.py file to make it a lot more streamlined to build a level
 This should not be accessed by pose estim, nor pose estim by this.
 
-This essentially contains some custom UI elements and animations to move around sprites.
+This essentially contains some custom UI elements and animations to move around sprites. Also the signal handler for QT.
+If you plan to port this over to a different GUI library, the signal handler is probably the most important thing here.
+It is the first class in the document.
 '''
+
+class SignalHandler():
+    #TODO: Write
+    pass
  
 # TODO: ADD MEDIAPIPE ANNOTATION OR MAKE YOUR OWN FUNC
-# TODO: POTENTIALLY ADD CHECK TO SEE IF FRAME EVEN UPDATED BEFORE WRITING TO GUI
-# TODO: DEFINITELY add that check to the drawing annotations function if you make a custom one
+# TODO: WRITE SIGNAL HANDLER FOR QT
 
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
 class PlayerFeed(QWidget):

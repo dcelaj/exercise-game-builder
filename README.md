@@ -12,7 +12,7 @@ The project file structure is as follows:
 
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets.
 - The **models** folder contains the machine learning models used in the game.
-    - You'll have to download the mediapipe model with the link in the text file provided.
+    - **You'll have to download the mediapipe model yourself** with the link in the text file provided.
     - The exercise detection model I've created is included with some helper files - info in the helper comments.
 - The **output** folder is used to collect any file outputs, mainly for debugging or final packaging.
 - The **source folder** contains all the python code and modules.
@@ -23,13 +23,14 @@ The project file structure is as follows:
 The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
-- **enumoptions.py** just contains some enums for more readable options.
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the function for the game logic, and slightly edit the starter function (designed to be called from the main GUI and start both the pose estimation thread and the thread for the aforementioned game logic). 
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
+    - It also contains the signal handler function, which is needed for the different threads to safely interact with the QT GUI.
+- **enumoptions.py** contains some enums for more readable options AND ALSO FILE PATHS. **EVERYONE WILL NEED TO CHANGE THIS FOR IT TO WORK, UNTIL I IMPLEMENT THE RELATIVE FILE PATHS.**
 
 ## Credits
 
@@ -99,3 +100,4 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Consider adding a check to see if (upon attempting to grab a new frame **for player video portrait**) you're actually changing the image or performing operations for nothing.
     - Not sure how computationally intensive repainting a duplicate frame even is compared to checking if two images are the same ... maybe carry out further tests later on if FPS gets low - **or maybe just paint the frame once every n game loop cycles if repainting slows down the GUI thread.**
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
+- [ ] Implement relative file paths for using the models - **HIGHEST PRIORITY**
