@@ -266,16 +266,19 @@ class Pose_Estimation(Thread):
     # Below this point are public functions - ones that are meant to be called repeatedly, anyway
     #
 
-    # Dump all results (mainly for troubleshooting)
+    # Dump all results in a thread safe way
     def get_results(self):
         '''
-        EXPLAIN THAT YOU SHOULD JUST ACCESS THE INSTANCE VARIABLES DIRECTLY
-        this is more for troubleshooting, but it does return the results
-        also explain if you want drawing/annotation, look to helpers for custom, 
-        or maybe just use the mediapipe default global function from this file - not ran from thread, just the global func
+        Returns the camera frame (ndarray), the mediapipe results (its own object), the exercise detection
+        results (deque), and the mask (None if show mask set to false, not implemented yet so always none)
+        in a thread safe way. 
+        
+        However, in practice, you can just read these variables at any time directly since race conditions
+        are not too troublesome in this context. If you need speed and don't care about race conditions,
+        just access them like you would any class variable.
+
+        No Arguments.
         '''
-        # TODO: write this, check showcam variable too
-        # TODO: ADD OPTION FOR GETTING IMG MASK TOO
 
         # Make flag false to get thread to release lock
         self._m_updated.clear()
@@ -337,8 +340,7 @@ class Pose_Estimation(Thread):
         # Returning as a tuple and a float
         return (x, y, z), v
 
-
-    # Changes the exercise being detected
+    # Changes the exercise being detected and possibly the model
     def set_exercise(self, new_exercise: int):
         '''
         Update the exercise being detected. See Exercises in enumoptions.py for a list of possible inputs.

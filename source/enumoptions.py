@@ -111,5 +111,5 @@ exercise_to_model = {
     Exercises.LAT_RAISE.value: Model_Paths.EX_DEFAULT.value,
     Exercises.TRICEP_EXTENSION.value: Model_Paths.EX_DEFAULT.value,
 
-    999: 'E:\\Projects\\exercise-testgame\\models\\exercise_model\\TEST_DUMMY_model.joblib'
+    999: 'E:\\Projects\\exercise-testgame\\models\\exercise_model\\random_dummy_model.joblib'
 }
