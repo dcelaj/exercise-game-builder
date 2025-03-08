@@ -24,21 +24,25 @@ exercise_test = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest
 #
 #
 
-# Exercises supported for detection
-class Exercises(Enum): # Edit only needed if making new exercise
-    JUMPING_JACK = 0 
+# Exercises supported for detection (exercises being used broadly to mean any pose or movement)
+class Exercises(Enum): # Edit if making new exercise
+    DEFAULT = 0 
+
     HIGH_KNEES = 1
-    LEG_RAISE = 2
-    ARMCIRCLES = 3
-    SQUAT = 4
-    DEADLIFT = 5
-    PLANK = 6
-    PUSHUP = 7
-    CRUNCH = 8
-    LAT_RAISE = 9
-    OVERHEAD_PRESS = 10 
-    CURL = 11
-    TRICEP_EXTENSION = 12
+    SQUAT = 2
+    LEG_RAISE = 3
+
+    PLANK = 4
+    PUSHUP = 5
+    CRUNCH = 6
+
+    OVERHEAD_PRESS = 7 
+    DEADLIFT = 8
+    CURL = 9
+
+    LAT_RAISE = 10
+    TRICEP_EXTENSION = 11 
+
 
 # MediaPipe's result numbering
 class Body_Parts(Enum): 
@@ -76,15 +80,7 @@ class Body_Parts(Enum):
     LEFT_FOOT_INDEX = 31
     RIGHT_FOOT_INDEX = 32
 
-# Camera output options
-class Cam_Style(Enum):
-    SKELETON = 0            # Skeleton draws the landmark points and connecting lines in a black background
-    NORMAL = 1              # Normal just shows the camera feed with no drawn annotations - saves some computing
-    HYBRID = 2              # Camera feed with annotations drawn over - about same as skeleton w one less numpy op
-    MASK = 3                # Most resource intensive, has mediapipe return an output mask of player's silhouette
-    STILL_IMG = 4           # Least resource intensive, returns no camera feed - will allow player to import a pfp
-
-
+# Adding the model paths to an enum for consistency
 class Model_Paths(StrEnum): 
     # Paths to MediaPipe model used
     MP_LITE = lite_mp_path
@@ -93,3 +89,27 @@ class Model_Paths(StrEnum):
 
     # Paths to custom exercise model used
     EX_DEFAULT = exercise_test
+
+# Finally, a dict mapping given exercises to a model. Sometimes one model can be used for multiple things
+# but you still want them to be different labels - like if you're making an RPG, swinging a sword is the
+# same motion as swinging a hammer, but you probably want the game to treat them differently.
+exercise_to_model = {
+    Exercises.DEFAULT.value: Model_Paths.EX_DEFAULT.value,
+
+    Exercises.HIGH_KNEES.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.SQUAT.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.LEG_RAISE.value: Model_Paths.EX_DEFAULT.value,
+
+    Exercises.PLANK.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.PUSHUP.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.CRUNCH.value: Model_Paths.EX_DEFAULT.value,
+
+    Exercises.OVERHEAD_PRESS.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.DEADLIFT.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.CURL.value: Model_Paths.EX_DEFAULT.value,
+
+    Exercises.LAT_RAISE.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.TRICEP_EXTENSION.value: Model_Paths.EX_DEFAULT.value,
+
+    999: 'E:\\Projects\\exercise-testgame\\models\\exercise_model\\TEST_DUMMY_model.joblib'
+}

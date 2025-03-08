@@ -1,18 +1,22 @@
+### Imports and abbreviations
 import enumoptions as op
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from collections import deque
+from typing import Optional
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe import solutions
 import mediapipe as mp
-import cv2
-import numpy as np
-import joblib
 
 # MediaPipe abbreviations
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
+
+import cv2
+import numpy as np
+import joblib
+###
 
 # MediaPipe visualization functions 
 def draw_landmarks_on_image(rgb_image, detection_result):
@@ -83,10 +87,8 @@ def preprocess(result):
     # each body point landmark corresponding to some four consecutive values
     return parsed_list
 
-def exercise_specific_processing(ex):   #TODO: delete this and incorproate support for switching exercise model mid game
-    # TODO: actually incorporate some exercise specific stuff, whether it be switching the model or preprocessing
-    # TODO: should also probably alter the other funcs to accommodate this instead of making this whole new func
-    # TODO: It's moreso a reminder than anything else
+def exercise_specific_processing(ex):   
+    # TODO: If you implement exercises needing special processing, use this and write a call in the detect exercise private func
     pass
 
 # Main Pose Estimation & Exercise Detection Thread
@@ -95,51 +97,84 @@ class Pose_Estimation(Thread):
     A dedicated pose estimation and exercise detection thread class, subclass of threading.Thread.
     Reads camera input and performs passes of machine learning on the output all in its own thread.
 
+    Only one of these threads should exist at a time (will eventually enforce singleton). Feel free
+    to read the public variables at any time, or if you really care about preventing race conditions 
+    use get_results (Python's Global Interpreter Lock makes this mostly unnecessary though)
+
     Arguments:
-    - exercise: 
-    READ-ONLY Public Variables:
+    - exercise: int
+    - return_mask: bool
+
+    READ-ONLY Public Variables: 
+    - cap: cv2.VideoFeed
+    - frame: ndarray
+    - mp_image: ndarray
+    - mp_result: MediaPipe Object
+    - mp_mask: None
+    - exercise: int
+    - ex_results: deque
+
     Protected Variables:
+    - _stop_event: Event (threading)
+    - _m_updated: Event (threading)
+    - _m_lock: Lock (threading)
+    - _ex_model: JobLib Object
+    - _options: MediaPipe Object
+    - _exists: bool
+
+    Example usage:
+        import poseestim.py as pe
+        t1 = pe.Pose_Estimation()
+        print('Current estimated landmarks: ', t1.mp_results)
+        print('Doing the exercise correctly?: ', bool(t1.ex_results[-1]))
     '''
 
     # Protected Class Variable - Singleton Pattern
     _exists = False                           # Is there already an instance of this class in existence? 
 
     # Constructor, Inputs, & Variables
-    def __init__(self, exercise=op.Exercises.CRUNCH.value, cam_style=op.Cam_Style.SKELETON.value, 
+    def __init__(self, exercise=op.Exercises.CRUNCH.value, return_mask=False, 
                  mp_model_path=op.Model_Paths.MP_FULL.value, ex_model_path=op.Model_Paths.EX_DEFAULT.value):
         # Calling Thread parent class constructor
         super().__init__()
 
         # Setting up variables
-        self.exercise = exercise              # Can change DYNAMICALLY - corresponds to the exercise the level is detecting from the list
-        self.cam_style = cam_style
+        self.return_mask = return_mask        # Not yet implemented
 
         # READ-ONLY Public Variables
-        self.cap = None                       # Holds CV2's video capture feed bject
+        self.cap = None                       # Holds CV2's video capture feed object
         self.frame = None                     # Holds raw CV2 video frame
         self.mp_image = None                  # Holds MP image info converted from a cap video feed frame
         self.mp_results = None                # Holds all the results of the MediaPipe inference
         self.mp_mask = None                   # Holds body shape image mask returned by MediaPipe
+        self.exercise = exercise              # Corresponds to the exercise the level is detecting from the list
         self.ex_results = deque(maxlen=32)    # Holds the most recent 32 results of exercise detection (last ~2 secs)
 
         # Protected variables
         self._stop_event = Event()            # Just an event flag for graceful exit
-        self._ex_model = joblib.load(         # Loading exercise model
-            ex_model_path)
         self._options = PoseLandmarkerOptions(# MediaPipe settings
             base_options=BaseOptions(model_asset_path=mp_model_path),
             running_mode=VisionRunningMode.VIDEO)
+        self._ex_model = joblib.load(         # Loading exercise model
+            ex_model_path)
+        self._m_updated = Event()            # Flag for if ex_model is safe to run (T) or is pending update (F)...
+        self._m_updated.set()                # ...model update is rare, so putting mutex accquisition behind flag for speed
+        self._m_lock = Lock()                # Mutex for updating exercise model, see above two variables
         Pose_Estimation._exists = True        # Singleton Pattern - so only one instance exists at a time
     
     # Pose Estimation Call
     def _estimate_pose(self, cap, landmarker):
         '''
         Uses the video feed capture and mediapipe landmarker objects (see 'def run(self):') to estimate pose and 
-        body landmark position.
+        body landmark position. "Private" function.
 
         Although this is technically an instance method, for data safety, it is being treated as an outside call. 
         This allows us to return the results and update the internal variables all at once. It is placed inside 
         the class purely for organizational reasons.
+
+        Arguments: (besides self)
+        - cap, a cv2.VideoCapture object
+        - landmarker, a mediapipe model object
         '''
 
         # Get image frame and time from video feed
@@ -154,8 +189,12 @@ class Pose_Estimation(Thread):
         pose_landmarker_result = landmarker.detect_for_video(mp_image, timestamp_ms)
 
         # TODO: Add image mask option
-        if self.cam_style == op.Cam_Style.MASK.value:
+        if self.return_mask:
             mask = None
+            # If you have an insanely fast computer and want to implement this, here
+            # is where you'd parse out the mask from the results - don't forget to
+            # go in __init__ func and add the extra argument to PoseLandmarkerOptions
+            # output_segmentation_masks=self.return_mask
         else:
             mask = None
 
@@ -166,12 +205,24 @@ class Pose_Estimation(Thread):
     def _detect_exercise(self, mp_rslt, exrcs):
         '''
         Just calls a cleanup function for data preprocessing, then calls the joblib RF model and
-        feeds it the cleaned up data. Then hands back the prediction to be appended to FIFO deque
+        feeds it the cleaned up data, then hands back the prediction to be appended to FIFO deque.
+        "Private" function.
 
         Takes the mp results object as input. Yes this could have just used self., but this feels
         better for data safety convention.
+
+        Arguments: (besides self)
+        - mp_rslt, the mediapipe results object
+        - exrcs, what exercise or movement is being detected
         '''
-        # TODO: Incorporate ability to switch between exercise model mid game
+        # Check if the main thread wants to update the model
+        if not self._m_updated.is_set():
+            # Give permission to update
+            self._m_lock.release()
+            # Wait until finished updating
+            self._m_updated.wait()
+            # Regain control of mutex when update done
+            self._m_lock.acquire()
         
         # Clean up MP results format
         clean = preprocess(mp_rslt)
@@ -188,6 +239,9 @@ class Pose_Estimation(Thread):
     
     # Main Function - Running the pose estimation followed by exercise detection in continuous loop
     def run(self):
+        # Acquire lock - 99% of time will have lock
+        self._m_lock.acquire()
+
         # Set up video feed
         self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -203,7 +257,9 @@ class Pose_Estimation(Thread):
                 predict = self._detect_exercise(self.mp_results, self.exercise)
                 self.ex_results.append(predict)
 
-        print(f"Thread finished")
+        # Clean up
+        print(f"Camera thread closed")
+        self._m_lock.release()
         return 0
     
     #
@@ -220,32 +276,95 @@ class Pose_Estimation(Thread):
         '''
         # TODO: write this, check showcam variable too
         # TODO: ADD OPTION FOR GETTING IMG MASK TOO
-        print("TODO")
+
+        # Make flag false to get thread to release lock
+        self._m_updated.clear()
+        # Wait for thread to give permission to update (since this func will be called from Main thread)
+        self._m_lock.acquire()
+
+        # Store all results in temporary variables
+        frm = self.frame
+        mp_rslts = self.mp_results
+        ex_rslts = self.ex_results
+        msk = self.mp_mask
+
+        # Release lock and fix flag again
+        self._m_lock.release()
+        self._m_updated.set()
+
+        return frm, mp_rslts, ex_rslts, msk
     
-    # Get a specific result, like a body part TODO: this
-    def get_body_part(self, body_part=op.Body_Parts.NOSE.value):
+    # Get a specific result, like a body part
+    def get_body_part(self, body_part=op.Body_Parts.NOSE.value, mp_rslts=None, safer=False):
         '''
-        Explain enum options - and return specific body part coordinate - default returns nose
-        So levels.py user won't have to deal with mediapipe's esoteric formatting and documentation
+        Returns xyz coordinates and visibility of a given body part from a mediapipe results object. 
+        With no arguments, returns the nose. See enumoptions.py for list of body parts. 
+        
+        Accepts an int corresponding to the body part, a mediapipe object to parse (put None to get
+        the most recent result), and a bool that forces this to be slower but thread safe if trying 
+        to get most recent result.
         '''
-        # TODO: write this
-        print("TODO")
+        # If user doesn't input a specific result, grab most recent
+        if mp_rslts is None and not safer:
+            # Faster, technically not thread safe but Python's GIL makes this perfectly fine
+            mp_rslts = self.mp_results
+        elif mp_rslts is None and safer:
+            # Fully thread safe, make flag false so cam thread gives up lock
+            self._m_updated.clear()
+            self._m_lock.acquire()
+            # Store in temp variable
+            mp_rslts = self.mp_results
+            # Return lock and flag to how they were
+            self._m_lock.release()
+            self._m_updated.set()
+
+        # Abbreviation for...
+        pose_landmarks_list = mp_rslts.pose_landmarks     # the result list in the media pipe return
+
+        # If no detection at all
+        if (len(pose_landmarks_list) == 0):
+            return (0.0, 0.0, 0.0), 0.0
+        
+        #
+        pose_landmarks = pose_landmarks_list[0]           # I have no idea why they made this a 2d list
+        
+        # Parsing out coordinates and visibility
+        x = pose_landmarks[body_part].x
+        y = pose_landmarks[body_part].y
+        z = pose_landmarks[body_part].z
+        v = pose_landmarks[body_part].visibility
+
+        # Returning as a tuple and a float
+        return (x, y, z), v
+
 
     # Changes the exercise being detected
-    def set_exercise(self, new_exercise):
+    def set_exercise(self, new_exercise: int):
         '''
-        Explain enum options and return data types depending on result
-        also explain this just does an extra clear, you can set thread1.exercise directly
+        Update the exercise being detected. See Exercises in enumoptions.py for a list of possible inputs.
         '''
+        # Make flag false to show model will be updating and not safe to use
+        self._m_updated.clear()
+        # Wait for thread to give permission to update (since this will be called from Main thread)
+        self._m_lock.acquire()
+
+        # Actually update the model, if new exercise calls for updating it
+        if op.exercise_to_model[new_exercise] is not op.exercise_to_model[self.exercise]:
+            self._ex_model = joblib.load(op.exercise_to_model[new_exercise])
+        
         # Clear results for new data types to come through
         self.ex_results.clear()
         self.exercise = new_exercise
+
+        # Finished - give back lock and set flag to let thread know model was updated (order is important)
+        self._m_lock.release()
+        self._m_updated.set()
     
     # Gracefully exits
     def stop(self):
         '''
         Gracefully terminates thread. Don't forget "del thread_name" to release name binding.
         '''
-        self.cap.release()
         self._stop_event.set()
+        self.cap.release()
         Pose_Estimation._exists = False
