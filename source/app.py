@@ -9,6 +9,8 @@ from PySide6.QtWidgets import (
 )
 import sys
 import levels
+from time import sleep
+from threading import Thread
 
 # TODO: try to keep a pure python threading pool and only using GUI to listen for a quit command.
 # but I'll need to use QT's stuff to accomplish the animation helpers, something to look into
@@ -24,20 +26,24 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("My App")
 
         self.label = QLabel()
+        self.started = [False]
 
         self.image_label = QLabel()
-        self.image_label.setFixedSize(QSize(320, 240))
+        self.image_label.setFixedSize(QSize(32, 24))
 
         self.quit_button = QPushButton("Quit")
-        self.quit_button.clicked.connect(self.close)
+        self.quit_button.clicked.connect(self.close_two)
+
+        self.testt = QPushButton("Start Test")
+        self.testt.clicked.connect(self.start_test)
 
         self.feed = None
-        self.started = False
 
         # adding them all to the layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.image_label)
+        self.layout.addWidget(self.testt)
 
         container = QWidget()
         container.setLayout(self.layout)
@@ -60,7 +66,7 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
         #...
-        if not self.started:
+        if not self.started[0]:
             #self.started = True # TODO: re-enable and find a way to make it false again when threads exit
             levels.start_level(value)
         else:
@@ -69,10 +75,24 @@ class MainWindow(QMainWindow):
         #...
         self.label.setText(f"Done!")
 
+    def start_test(self):
+        if not self.started[0]:
+            self.feed = levels.level1()
+            self.layout.addWidget(self.feed)
+            self.started[0] = True
+            
+            self.lvl_thread = Thread(target=levels.testtt, args=[self.feed, self.started])
+            self.lvl_thread.start()
+        else: 
+            self.started[0] = False
+            sleep(5)
+
+    def close_two(self):
+        self.started[0] = False
+        sleep(1)
+        super().close()
 
 app = QApplication(sys.argv)
-
 window = MainWindow()
 window.show()
-
 app.exec()

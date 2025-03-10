@@ -95,7 +95,7 @@ class PlayerFeed(QWidget):
         self.xyz_layout.addWidget(self.head_y)
         self.xyz_layout.addWidget(self.head_z)
         #quit button, temporary
-        self.quit_button = QPushButton("Quit")
+        self.quit_button = QPushButton("Quit (NOT WORKING RN, USE ABOVE QUIT)")
         self.quit_button.clicked.connect(self.close) #TODO: get rid of quit button, handle feed.close in levels.py
 
         # HP and Progress bars

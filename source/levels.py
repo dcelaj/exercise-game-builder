@@ -140,7 +140,7 @@ def testtt(feed, loop): # level func args should contain refs to all GUI element
     feed.update_frame(img)
     sleep(5)
     cntr = 0
-    while loop.strtd:
+    while loop[0]:
         cntr = cntr + 1
         img = t1.get_default_annotation()
         hlpr.invoke_in_main_thread(feed.update_frame, img)
