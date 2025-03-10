@@ -29,7 +29,7 @@ The source folder contains:
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
-    - It also contains the signal handler function, which is needed for the different threads to safely interact with the QT GUI.
+    - It also contains the event invoker function, which is needed for the different threads to safely interact with the QT GUI.
 - **enumoptions.py** contains some enums for more readable options and also file path stuff.
 
 ## Credits

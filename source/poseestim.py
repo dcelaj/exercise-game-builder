@@ -1,8 +1,7 @@
-### Imports and abbreviations
+### Imports (and mediapipe abbreviations)
 import enumoptions as op
 from threading import Thread, Event, Lock
 from collections import deque
-from typing import Optional
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe import solutions
 import mediapipe as mp
@@ -18,7 +17,7 @@ import numpy as np
 import joblib
 ###
 
-# MediaPipe visualization functions 
+# Default MediaPipe visualization function 
 def draw_landmarks_on_image(rgb_image, detection_result):
   '''
   Draw pose tracking landmarks on any image
@@ -129,7 +128,7 @@ class Pose_Estimation(Thread):
         print('Doing the exercise correctly?: ', bool(t1.ex_results[-1]))
     '''
 
-    # Protected Class Variable - Singleton Pattern
+    # Protected Class Variable - TODO: Singleton Pattern
     _exists = False                           # Is there already an instance of this class in existence? 
 
     # Constructor, Inputs, & Variables
@@ -215,14 +214,6 @@ class Pose_Estimation(Thread):
         - mp_rslt, the mediapipe results object
         - exrcs, what exercise or movement is being detected
         '''
-        # Check if the main thread wants to update the model
-        if not self._m_updated.is_set():
-            # Give permission to update
-            self._m_lock.release()
-            # Wait until finished updating
-            self._m_updated.wait()
-            # Regain control of mutex when update done
-            self._m_lock.acquire()
         
         # Clean up MP results format
         clean = preprocess(mp_rslt)
@@ -257,16 +248,61 @@ class Pose_Estimation(Thread):
                 predict = self._detect_exercise(self.mp_results, self.exercise)
                 self.ex_results.append(predict)
 
+                # Check if the main thread wants to update the model or read something
+                if not self._m_updated.is_set():
+                    # Give permission to update
+                    self._m_lock.release()
+                    # Wait until finished updating
+                    self._m_updated.wait()
+                    # Regain control of mutex when update done
+                    self._m_lock.acquire()
+
         # Clean up
         print(f"Camera thread closed")
         self._m_lock.release()
-        return 0
+        return None
     
     #
     # Below this point are public functions - ones that are meant to be called repeatedly, anyway
     #
 
-    # Dump all results in a thread safe way
+    # Run the default mediapipe annotations (thread safe optional)
+    def get_default_annotation(self, hide_cam=True, safer=False):
+        '''
+        Returns the default mediapipe annotation results as an image in ndarray form. 
+        Two optional arguments, first if true hides the camera and annotates a black background.
+        Second if true makes it fully thread safe but slightly slower.
+
+        I recommend using a different visualizer if you're making a game since this is pretty bare bones.
+        '''
+
+        # Quicker vs thread safe
+        if not safer:
+            mp_rslts = self.mp_results
+            if not hide_cam:
+                img_input = self.frame
+            else:
+                width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                img_input = np.zeros((height, width, 3), dtype=np.uint8)
+        else:
+            self._m_updated.clear()
+            self._m_lock.acquire()
+            mp_rslts = self.mp_results
+            if not hide_cam:
+                img_input = self.frame
+            else:
+                width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                img_input = np.zeros((height, width, 3), dtype=np.uint8)
+            self._m_lock.release()
+            self._m_updated.set()
+        
+        # Use the default mp draw annotations example function 
+        anntd_img = draw_landmarks_on_image(img_input, mp_rslts)
+        return anntd_img
+
+    # Dump all results (thread safe)
     def get_results(self):
         '''
         Returns the camera frame (ndarray), the mediapipe results (its own object), the exercise detection
@@ -277,7 +313,7 @@ class Pose_Estimation(Thread):
         are not too troublesome in this context. If you need speed and don't care about race conditions,
         just access them like you would any class variable.
 
-        No Arguments.
+        No Arguments. Returns frm, mp_rslts, ex_rslts, msk.
         '''
 
         # Make flag false to get thread to release lock
@@ -297,7 +333,7 @@ class Pose_Estimation(Thread):
 
         return frm, mp_rslts, ex_rslts, msk
     
-    # Get a specific result, like a body part
+    # Get a specific result, like a body part (thread safe optional)
     def get_body_part(self, body_part=op.Body_Parts.NOSE.value, mp_rslts=None, safer=False):
         '''
         Returns xyz coordinates and visibility of a given body part from a mediapipe results object. 
@@ -340,7 +376,7 @@ class Pose_Estimation(Thread):
         # Returning as a tuple and a float
         return (x, y, z), v
 
-    # Changes the exercise being detected and possibly the model
+    # Changes the exercise being detected and possibly the model (thread safe)
     def set_exercise(self, new_exercise: int):
         '''
         Update the exercise being detected. See Exercises in enumoptions.py for a list of possible inputs.

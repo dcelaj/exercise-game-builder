@@ -1,6 +1,9 @@
 from PySide6.QtCore import (
     QSize, 
     Qt,
+    QEvent,
+    QCoreApplication,
+    QObject,
 )
 from PySide6.QtGui import (
     QAction, 
@@ -30,12 +33,37 @@ If you plan to port this over to a different GUI library, the signal handler is 
 It is the first class in the document.
 '''
 
-class SignalHandler():
-    #TODO: Write
-    pass
+########## FUNCTION TO UPDATE GUI FROM OUTSIDE THREAD 
+# if you want to adapt this code to work without PySide, it's important you change this
+
+# Function invoke_in_main_thread to update GUI from a different thread
+# written by Stack Overflow users chfoo and Petter, taken from this post
+# https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread
+
+class InvokeEvent(QEvent):
+    EVENT_TYPE = QEvent.Type(QEvent.registerEventType())
+
+    def __init__(self, fn, *args, **kwargs):
+        QEvent.__init__(self, InvokeEvent.EVENT_TYPE)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+class Invoker(QObject):
+    def event(self, event):
+        event.fn(*event.args, **event.kwargs)
+
+        return True
+
+_invoker = Invoker()
+
+def invoke_in_main_thread(fn, *args, **kwargs):
+    QCoreApplication.postEvent(_invoker,
+        InvokeEvent(fn, *args, **kwargs))
+
+##########
  
 # TODO: ADD MEDIAPIPE ANNOTATION OR MAKE YOUR OWN FUNC
-# TODO: WRITE SIGNAL HANDLER FOR QT
 
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
 class PlayerFeed(QWidget):
