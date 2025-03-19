@@ -23,11 +23,12 @@ The project file structure is as follows:
 The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
+    - You probably want yo make your own custom GUI that isn't so bare bones; the only function you really have to preserve is **clicked_level_button**, since that sets up the play area and recieves the thread pointers.
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the functions for the game logic... 
-        - One setup func for instantiating - from the main thread - both the objects needed in your level and the level thread itself,
-        - and a level func for the actual game logic and events to run in that new level thread.
-    - ...and slightly edit the starter function (designed to be called from the main GUI and return the references/pointers to those objects and thread) by adding the case for your level.
+        - One **setup** func for instantiating - from the main thread - both the objects needed in your level and the level thread itself,
+        - and a **level** func for the actual game logic and events to run in that new level thread.
+    - ...and slightly edit the **starter** function (designed to be called from the main GUI and return the references/pointers to those objects and thread) by adding the case for your level.
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
     - More info on what to do in GUIDE.md.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
@@ -78,9 +79,9 @@ This program uses machine learning to detect and classify the user's input. The 
 
 If you plan to create your own models to detect different kinds of poses as input, a helper file is included to capture pose data and a training file for creating a random forest classifier in scikit using that data. You can use a different model - just update the exercise detection function in the Pose_Estimation class to use your own model (make sure to import the proper libraries if you aren't using scikit learn). I personally recomment sticking to a random forest classifier, as it's generally good "out of the box" when it comes to high dimensional data with few training examples, and inference calculation time is relatively fast compared to other multi-class classifiers. That being said, ML model performance depends on a ton of factors and can often be counterintuitive - if you build a model that works particularly well, please feel free to share it!
 
-**Addendum:** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from unconsenting netizens to train their models. In addition to this being a violation of privacy, it also results in undocumented training datasets which cannot be easily checked for bias. 
+**Addendum:** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from **unconsenting netizens and artists** to train their models. In addition to this being a **violation of ethics**, it also results in undocumented training datasets which cannot be easily checked for problems.
 
-I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, I would hope the researchers have taken the proper ethical considerations.
+I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, it gives me hope that the researchers have taken the proper ethical considerations - both to mitigate bias and to respect the wishes of the people in the training images. 
 
 <br>
 

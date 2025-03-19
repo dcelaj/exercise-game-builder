@@ -1,5 +1,6 @@
 from threading import Thread, Event, Lock
 from time import sleep
+from PySide6.QtWidgets import QGraphicsObject, QGraphicsScene, QGraphicsView, QWidget
 import numpy as np
 import helpers as hlpr
 import poseestim as pe
@@ -90,18 +91,20 @@ def start_level(layout_ref, level=0):
 
 # DEMO SETUP + EXPLANATION
 # MUST RETURN THREAD REFERENCE/POINTER
-# SOUR NEWS - DEVELOPERS HATE YOU, QGRAPHICS ITEM DOESNT INHERIT QOBJECT, YOU HAVE TO MAKE YOUR OWN SUBCLASS OF BOTH TO ANIM
+def setup_demo_level():
+    pass
 
 # DEMO LEVEL + EXPLANATION
-def demo_level(canvas, overlay, object_list:list, game_loop:Event, 
-               graphics_lock:Lock, cam_thread:pe.Pose_Estimation):
+def demo_level(canvas:QGraphicsScene, canvas_view:QGraphicsView, overlay:QGraphicsObject, object_list:list|dict,  
+               game_loop:Event, graphics_lock:Lock, cam_thread:pe.Pose_Estimation):
     '''
-    - Canvas is where all the assets are loaded to, overlay is less important and holds some stats and options buttons
+    - Canvas is where all the assets are loaded to, canvas_view is the container for it (prob won't be used, feel free to not include)
+    - Overlay just holds some stats and options buttons and shows dialogue
     - Game loop controls whether the game loop is still running or not
     - Graphics lock is intended to be used if you're doing complex stuff with the canvas and need a return from it (rare)
     - Cam thread is the camera pose estimation thread that tracks player input
 
-    - The third argument, object_list, holds a list with the references to all the QObjects created in the setup function
+    - The third argument, object_list, holds a list/dict with the references to all the QObjects created in the setup func
     - Whenever you want to update those assets, always use hlpr.invoke_in_main_thread(obj.func, args)
     '''
     
@@ -109,9 +112,19 @@ def demo_level(canvas, overlay, object_list:list, game_loop:Event,
 
 #__________________________ 
 
-# This is where you can write your level functions. Make sure to modify the start_level func up top to fit your level's needs.
-# If you don't need more than 4 changable images on screen (not including the background, dialogue box, or player portrait),
-# feel free to use the skeleton provided below in level 1!
+# This is where you can write your level functions. Make sure to add a case in the start_level func above to call the setup.
+# Feel free to use the skeleton setup and level provided below in level 1! 
+# Here are some parts of Qt that may be useful when making your level: 
+# https://doc.qt.io/qtforpython-6/PySide6/QtCore/QPropertyAnimation.html 
+# https://doc.qt.io/qt-6/qgraphicsview.html
+# https://doc.qt.io/qt-6/qgraphicsscene.html 
+# https://doc.qt.io/qt-6/qgraphicsitem.html 
+
+# SKELETON SETUP
+#
+
+# SKELETON LEVEL
+# 
 
 def level1():
     feed = hlpr.PlayerFeed()
