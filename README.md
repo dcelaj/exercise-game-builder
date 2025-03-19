@@ -10,11 +10,11 @@ Eventually I hope to make a C library to port MediaPipe into a proper game engin
 
 The project file structure is as follows:
 
-- The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets.
+- The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets. Right now there are two NPCs and two backgrounds hastily put together for testing and demo. Feel free to delete anything here and replace with your own assets.
 - The **models** folder contains the machine learning models used in the game.
     - **You'll have to download the mediapipe model yourself** with the link in the text file provided.
     - The exercise detection model I've created is included with some helper files to create your own model - info in the helper comments.
-- The **output** folder is used to collect any file outputs, mainly for debugging or final packaging.
+- The **output** folder is used to collect any file outputs, mainly for debugging but also for config.
 - The **source folder** contains all the python code and modules.
 - The plan png file is a **REALLY** rough sketch of how everything was set up and planned.
 - The requirements text file contains all the packages needed to run this code - I recommend using a python version manager and setting up an environment for this. 
@@ -24,8 +24,12 @@ The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
-    - To make a level, you'll want to write the function for the game logic, and slightly edit the starter function (designed to be called from the main GUI and start both the pose estimation thread and the thread for the aforementioned game logic). 
+    - To make a level, you'll want to write the functions for the game logic... 
+        - One setup func for instantiating - from the main thread - both the objects needed in your level and the level thread itself,
+        - and a level func for the actual game logic and events to run in that new level thread.
+    - ...and slightly edit the starter function (designed to be called from the main GUI and return the references/pointers to those objects and thread) by adding the case for your level.
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
+    - More info on what to do in GUIDE.md.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
@@ -102,4 +106,6 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
     - Not sure how computationally intensive repainting a duplicate frame even is compared to checking if two images are the same ... maybe carry out further tests later on if FPS gets low - **or maybe just paint the frame once every n game loop cycles if repainting slows down the GUI thread.**
     - similarly, maybe add a head visibility check for the data gatherer py file
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
+- [ ] Add FAQ page for people using this unfamiliar with QT only using this to make a game (cover how to do an animation, change background, the custom classes provided, etc)
+    - FAQ page should also cover HOW TO WRITE AND EDIT THE DAMN LEVEL.PY FUNCTIONS BECAUSE IT GOT A LITTLE CONFUSING
 

@@ -24,6 +24,17 @@ exercise_test = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest
 #
 #
 
+# Reading config file
+#
+#
+#
+screen_res = (1920, 1080)
+s_width = 1920
+s_height = 1080
+#
+#
+#
+
 # Exercises supported for detection (exercises being used broadly to mean any pose or movement)
 class Exercises(Enum): # Edit if making new exercise
     DEFAULT = 0 

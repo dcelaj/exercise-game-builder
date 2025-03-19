@@ -5,6 +5,7 @@ models/exercise_model/__pycache__
 source/test.py
 source/__pycache__
 assets/misc/*.blend1
-assets/desktop.ini
-assets/characters/desktop.ini
+output/*.ui
+output/*.py
+*.ini
 TODO.txt
