@@ -115,6 +115,7 @@ print(f"Accuracy: {accuracy}")
 joblib.dump(rf_model, 'randomforest_model.joblib')
 
 print("Random Forest model created and saved successfully!")
+print("Just check the parent folders, it might be saved to the project root.")
 
 
 ### ---- TODO: Putting the above in terms of function in a different helper file so it can be called from the GUI ----- ###

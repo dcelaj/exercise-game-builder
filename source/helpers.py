@@ -8,9 +8,6 @@ from PySide6.QtCore import (
     QRectF,
 )
 from PySide6.QtGui import (
-    QAction, 
-    QPalette, 
-    QColor,
     QImage,
     QPixmap,
     QPainter,
@@ -25,7 +22,6 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QGraphicsObject,
     QTextEdit,
-    QFrame,
 )
 import numpy as np
 import cv2

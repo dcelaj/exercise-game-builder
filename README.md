@@ -34,7 +34,7 @@ The source folder contains:
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
-    - It also contains the event invoker function, which is needed for the different threads to safely interact with the QT GUI.
+    - It also contains the **event invoker function**, which is needed for the different threads to safely interact with the QT GUI.
 - **enumoptions.py** contains some enums for more readable options and also file path stuff.
 
 ## Credits
@@ -51,15 +51,15 @@ While I didn't directly reference any code from these, [William Sokol's head tra
 
 ### Structure
 
-The **main thread in app.py** calls the startup function in levels.py to start a level (still on main thread rn, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
+The **main thread in app.py** calls the start_level function in levels.py to start a level (still on main thread, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
 
-The levels.py function makes custom GUI Qt objects (declared in helper function) to start the level GUI, and also makes some signal handler objects to connect to the custom GUI. It connects the signal handlers to some basic lambda functions to keep the main app.py file clean. (Still in main thread, just creating new objects and handlers to give to Main Window class)
+The levels.py **start_level** function makes custom GUI Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then passes the references of these to the level_setup function. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
 
-The levels.py function finally **makes two new threads**: the camera/pose estimation thread and the game logic thread, in that order. The game logic thread is given access to the pointers for the camera/pose thread and all the handler objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the signal handler objects we gave it. 
+The level_setup function finally **makes the level thread**; Keep in mind the camera thread was already created by start_level. The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
 
 **The game logic thread runs the function corresponding to the level selected. Writing one of these functions is how one writes a level.**
 
-Finally with those two threads running in the background, **we turn our attention back to the main thread,** currently blocking the GUI as it's still completing the levels.py function call. The levels.py function **returns the new GUI objects, new signal handlers, and the pointers to the two running threads** back to the awaiting main class. The GUI resumes being responsive, allowing you to gracefully quit the threads and program.
+Finally with those two threads running in the background, **we turn our attention back to the main thread,** currently blocking the GUI as it's still completing the levels.py function call. The levels.py function **returns the new GUI objects and the pointers to the two running threads** back to the awaiting main class. The GUI resumes being responsive, allowing you to gracefully quit the threads and program.
 
 When the level is quit, a signal is sent for all the threads to gracefully exit and the QObjects holding the level UI and signals are destroyed.
 
