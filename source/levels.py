@@ -116,6 +116,7 @@ def demo_level(canvas:QGraphicsScene, canvas_view:QGraphicsView, overlay:QGraphi
 # Feel free to use the skeleton setup and level provided below in level 1! 
 # Here are some parts of Qt that may be useful when making your level: 
 # https://doc.qt.io/qtforpython-6/PySide6/QtCore/QPropertyAnimation.html 
+# https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QTextEdit.html#PySide6.QtWidgets.QTextEdit.setText 
 # https://doc.qt.io/qt-6/qgraphicsview.html
 # https://doc.qt.io/qt-6/qgraphicsscene.html 
 # https://doc.qt.io/qt-6/qgraphicsitem.html 

@@ -42,6 +42,15 @@ class MainWindow(QMainWindow):
         self.main_menu_layout.addWidget(self.op_butt)
         self.main_menu_layout.addWidget(self.gal_butt)
         self.main_menu_layout.addWidget(self.quit_button)
+        # import helpers
+        # import numpy as np
+        # from PySide6.QtCore import QPoint
+        # from PySide6.QtWidgets import QLayout
+        # testt=helpers.PlayerPortrait("fuck")
+        # self.main_menu_layout.addWidget(testt)
+        # testt.update_head_coords(.1, .1, .1)
+        # testt.update_frame(np.zeros((500, 500, 3), dtype=np.uint8))
+        # testt.update_stat_bar(40)
         self.main_menu_page.setLayout(self.main_menu_layout)
 
         # ACTUAL LEVEL PAGE where the called levels.py function can add stuff
