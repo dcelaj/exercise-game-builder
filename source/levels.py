@@ -1,13 +1,14 @@
 from threading import Thread, Event, Lock
 from time import sleep
 from PySide6.QtWidgets import QGraphicsObject, QGraphicsScene, QGraphicsView, QWidget
+from PySide6.QtCore import QObject, QRect, QPoint, Qt
 import numpy as np
 import helpers as hlpr
 import poseestim as pe
 
 # Setting up GUI, signals, and threads to run the level
 # If you want to make drastic changes to level UI, do it here
-def start_level(layout_ref, level=0):
+def start_level(parent_ref:QObject | None, level=0):
     '''
     Initializes the GUI elements common to all levels (the dialogue box, NPCs, etc) before
     starting the pose estimation camera thread and the level thread.
@@ -15,41 +16,47 @@ def start_level(layout_ref, level=0):
     To prematurely quit a level, call cmr_thrd.stop() and game_loop.clear()
 
     Arguments
-    - layout_ref, a reference to pass a QT layout for the UI elements to be added to
+    - parent_ref, a reference to the widget which will become the parent of the widgets 
     - level, an int corresponding to the level you want to pick (defaults to 0, a demo level)
 
     Returns
     - game_loop, a threading event which when cleared stops the game loop
-    - graphics_lock, a threading lock/mutex for when the game logic thread needs to access QGraphicsView returns
     - camera_thread, a reference/pointer to the pose estimation thread reading the camera
     - level_thread, a reference/pointer to the thread controlling the level
 
-    - canvas, a QGraphicsScene object to hold game assets
-    - canvas_view, a QGraphicsView object to view the scene TODO 
+    - scene, a QGraphicsScene object to hold game assets
+    - view, a QGraphicsView object to view the scene 
     - overlay, a custom QWidget to display game stats
     '''
+    # Getting available screen geometry in local coordinates
+    w, h = hlpr.get_avail_geo()
+    h = h+50 # couldn't figure out why but height was reading slightly too short - had to manually add 50
 
-    print("Creating GUI QWidgets...")
-    # QGraphicsScene and View to hold all the visuals
-    canvas = None
-    canvas_view = None
-    layout_ref.addWidget(canvas_view)
+    # Creating GUI widgets...
+    # QGraphicsScene and View to hold all the visuals 
+    scene = QGraphicsScene(0, 0, w, h, parent=parent_ref)
+    view = QGraphicsView(scene, parent=parent_ref)
+    view.setGeometry(0, 0, w, h)
+    view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    view.setInteractive(False) # Change this is you want to be able to interact with view by mouse
+    view.show()
     # Overlay containing NPC Portrait, Dialogue Box, and Player Portrait
-    overlay = None
-    layout_ref.addWidget(overlay) # look for way to parent canvas so overlay is always over it
+    overlay = hlpr.Overlay("Test", parent=view)
+    overlay.dialogue_box.SIGNAL.CLOSE.connect(parent_ref.close_children)
+    overlay.show()
 
-    print("Adding to layout...")
-    # Layout to hold bottom bar UI like a fancy visual novel
+    
+    return level, 0, 0, 0, 0, 0 #TODO DELETE THIS IS JUST A TEST STOP
 
-    print("\nStarting camera ML thread...")
-    # The poseestim thread needs some time to properly boot up
+    # Starting camera ML thread... - needs some time to properly boot up
     camera_thread = pe.Pose_Estimation()
+    camera_thread.daemon = True
     sleep(5)
 
-    print("Creating thread safe communication...")
-    # The invoker was already instantiated on importing helpers.py, but that allows sending GUI commands to execute from main thread
+    # More thread stuff...
+    # The invoker was already instantiated on importing helpers.py, and that allows sending GUI commands to execute from main thread
     game_loop = Event()
-    graphics_lock = Lock()
 
     #__________________________
 
@@ -59,12 +66,16 @@ def start_level(layout_ref, level=0):
             print("\nDemo Level Selected!")
             print("Starting demo_level thread...")
 
+            # Setup the level objects needed - returns a list or dict of these objects
+            setup_objects =  setup_level()
+
             # Create thread to run level func in parallel - for target put just the name of the func, for args put the args in []
-            level_thread = Thread(target=demo_level, args=[canvas, overlay, game_loop, graphics_lock, camera_thread])
+            level_thread = Thread(target=level_demo, args=[scene, view, overlay, setup_objects, game_loop, camera_thread])
+            level_thread.daemon = True
             
             #Starting the thread and game loop
-            level_thread.start()
             game_loop.set()
+            level_thread.start()
 
         case 1:
             print("\nLevel 1 Slected!")
@@ -87,25 +98,30 @@ def start_level(layout_ref, level=0):
     print("\nReturning pointers to all created objects and threads...")
     # You really only NEED to return the thread and game loop references
     # The rest of the QObjects can be handled and deleted in thread with hlprs.invoke_in_main_thread(fn, args)
-    return game_loop, graphics_lock, camera_thread, level_thread, canvas, canvas_view, overlay
+    return game_loop, camera_thread, level_thread, scene, view, overlay
 
 # DEMO SETUP + EXPLANATION
-# MUST RETURN THREAD REFERENCE/POINTER
-def setup_demo_level():
+# MUST LIST OF OBJECTS TO BE USED (if you wanna do something else, modify the start_level func accordingly)
+def setup_demo():
     pass
 
 # DEMO LEVEL + EXPLANATION
-def demo_level(canvas:QGraphicsScene, canvas_view:QGraphicsView, overlay:QGraphicsObject, object_list:list|dict,  
-               game_loop:Event, graphics_lock:Lock, cam_thread:pe.Pose_Estimation):
+def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:QGraphicsObject, object_list:list|dict,  
+               game_loop:Event, cam_thread:pe.Pose_Estimation):
     '''
-    - Canvas is where all the assets are loaded to, canvas_view is the container for it (prob won't be used, feel free to not include)
-    - Overlay just holds some stats and options buttons and shows dialogue
-    - Game loop controls whether the game loop is still running or not
-    - Graphics lock is intended to be used if you're doing complex stuff with the canvas and need a return from it (rare)
-    - Cam thread is the camera pose estimation thread that tracks player input
+    This is a level function, where the camera ml results will be read and used as input for the game. This 
+    holds the gameplay logic and loop. The arguments are explained below.
 
-    - The third argument, object_list, holds a list/dict with the references to all the QObjects created in the setup func
-    - Whenever you want to update those assets, always use hlpr.invoke_in_main_thread(obj.func, args)
+    REMEMBER: When you want to use the object_list assets, always use hlpr.invoke_in_main_thread(obj.func, args)
+    to be thread safe. If you want to receive returns from a QObject func, you're gonna have to implement that.
+
+    The arguments are...
+    - scene is where all the assets are loaded to
+    - view is the container for the scene (would only used for entire screen transforms, rare)
+    - overlay just holds some stats and options buttons and shows dialogue
+    - object_list is the list or dict holding all the objects you created for your level in the setup
+    - game_loop controls whether the game loop is still running or not
+    - cam_thread is the camera pose estimation thread that tracks player input
     '''
     
     pass

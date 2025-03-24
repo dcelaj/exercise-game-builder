@@ -11,6 +11,7 @@ from PySide6.QtGui import Qt
 import sys
 from time import sleep
 import levels
+from helpers import Level_Widget
 
 # Subclass QMainWindow to customize your application's main window
 class MainWindow(QMainWindow):
@@ -18,8 +19,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Has the game started yet? TODO delete when debugging over
-        self.started = [False]
+        # Important variables for functioning of app
+        self.started = False        # Is a level currently in progress?
+        self.cam_thread = None      # Placeholder for camera thread
+        self.lvl_thread = None      # Placeholder for level thread
 
         self.setWindowTitle("My App")
 
@@ -42,19 +45,12 @@ class MainWindow(QMainWindow):
         self.main_menu_layout.addWidget(self.op_butt)
         self.main_menu_layout.addWidget(self.gal_butt)
         self.main_menu_layout.addWidget(self.quit_button)
-        # import helpers
-        # import numpy as np
-        # from PySide6.QtCore import QPoint
-        # from PySide6.QtWidgets import QLayout
-        # testt=helpers.PlayerPortrait("fuck")
-        # self.main_menu_layout.addWidget(testt)
-        # testt.update_head_coords(.1, .1, .1)
-        # testt.update_frame(np.zeros((500, 500, 3), dtype=np.uint8))
-        # testt.update_stat_bar(40)
         self.main_menu_page.setLayout(self.main_menu_layout)
 
         # ACTUAL LEVEL PAGE where the called levels.py function can add stuff
-        self.play_page = QWidget()
+        self.play_page = Level_Widget()
+        self.play_page.SIGNAL.CLOSE.connect(self.close_level)
+        
 
         # Level Select Page
         self.lvl_select_page = QWidget()
@@ -63,16 +59,12 @@ class MainWindow(QMainWindow):
         # Back button
         self.back_button1 = QPushButton("Back")
         self.back_button1.clicked.connect(lambda: self.navigate_to(0))
-        # Start test button
-        self.testt = QPushButton("Start Test")
-        self.testt.clicked.connect(self.start_test)
         # adding them all to the layout
         self.lvl_select_lay = QVBoxLayout()
         self.lvl_select_lay.addWidget(self.label)
-        self.lvl_select_lay.addWidget(self.testt)
         self.lvl_select_page.setLayout(self.lvl_select_lay)
         # Level Select Buttons
-        for i in range(1, 6):  # Creating 5 buttons with values 1 to 5
+        for i in range(0, 6):  # Creating 5 buttons with values 1 to 5
             level_button = QPushButton(f"Level {i}")
             level_button.clicked.connect(lambda checked, x=i: self.level_button_clicked(x))
             self.lvl_select_lay.addWidget(level_button)
@@ -104,40 +96,40 @@ class MainWindow(QMainWindow):
 
         # Set the central widget of the Window.
         self.setCentralWidget(self.stacked_main)
+        self.setWindowState(Qt.WindowFullScreen)
 
-    #...
+    # Starting a level if safe to do so, assigning the proper variables
     def level_button_clicked(self, value):
-        self.label.setText(f"Loading Level {value}")
-        QApplication.processEvents()
-
         #...
-        if not self.started[0]:
-            #self.started = True # TODO: re-enable and find a way to make it false again when threads exit
-            levels.start_level(value)
+        if not self.started:
+            self.started = True
+            self.navigate_to(4)
+            self.game_loop, self.cam_thread, self.lvl_thread, s, v, o = levels.start_level(self.play_page, value)
         else:
-            print("already started bosss")
-        
-        #...
-        self.label.setText(f"Done!")
+            return 0
 
-    def start_test(self):
-        if not self.started[0]:
-            self.feed = levels.level1()
-            self.layout.addWidget(self.feed)
-            self.started[0] = True
-        else: 
-            self.started[0] = False
-            sleep(5)
+    def close_level(self):
+        # The custom widget should have already killed its children at this point
+        # Safely closing threads
+        self.cam_thread.stop()
+        self.game_loop.clear()
+        self.cam_thread.join()
+        self.lvl_thread.join()
+        # Freeing up name same (relying on python garbage collector to delete object after this)
+        self.cam_thread = None
+        self.lvl_thread = None
+        self.game_loop = None
+
+        # Navigating to home page
+        self.navigate_to(0)
+        self.started = False
     
     def navigate_to(self, page):
-        if page == 4:
-            # This is only done for the screen where the gameplay takes place, sets fullscreen
-            self.setWindowState(Qt.WindowFullScreen)
         self.stacked_main.setCurrentIndex(page)
 
     def close_app(self):
-        self.started[0] = False
-        sleep(0.5)
+        self.started = False
+        # TODO Add code to save progress here, if needed
         super().close()
 
 app = QApplication(sys.argv)

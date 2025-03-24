@@ -84,6 +84,25 @@ class Overlay_Signals(QObject):
     CLOSE = Signal()
     HIDE = Signal()
 
+### Level page widget container - super bare bones
+class Level_Widget(QWidget):
+    '''
+    QWidget to hold level stuff. Has only one additional function that kills its children and emits a CLOSE signal.
+    '''
+    def __init__(self, parent=None):
+        self.SIGNAL = Overlay_Signals()
+        super(Level_Widget, self).__init__(parent)
+
+    def close_children(self):
+        '''
+        Kills children and self, emits CLOSE signal
+        '''
+        for child in self.findChildren(QObject):
+            child.deleteLater() # Kills C++ object, python refs should still be deleted later
+        
+        self.SIGNAL.CLOSE.emit()
+            
+
 ### Player Portrait 
 class Player_Portrait(QWidget):
     '''
@@ -565,6 +584,10 @@ class Overlay(QWidget):
 
     IMPORTANT: don't add it to a layout, call .show
     '''
+    ### Slightly referenced this stackoverflow post for the overlay:
+    ### https://stackoverflow.com/questions/44264852/pyside-pyqt-overlay-widget 
+    ### specifically user Armatita's answer
+
     # Constructor
     def __init__(self, player_name, still_icon=False, parent=None):
         # Init

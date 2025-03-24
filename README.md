@@ -26,9 +26,9 @@ The source folder contains:
     - You probably want yo make your own custom GUI that isn't so bare bones; the only function you really have to preserve is **clicked_level_button**, since that sets up the play area and recieves the thread pointers.
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the functions for the game logic... 
-        - One **setup** func for instantiating - from the main thread - both the objects needed in your level and the level thread itself,
+        - One **setup** func for instantiating - from the main thread - the objects needed in your level,
         - and a **level** func for the actual game logic and events to run in that new level thread.
-    - ...and slightly edit the **starter** function (designed to be called from the main GUI and return the references/pointers to those objects and thread) by adding the case for your level.
+    - ...and slightly edit the **starter** function (designed to be called from the main GUI and return the references/pointers to those objects and threads) by adding the case for your level.
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
     - More info on what to do in GUIDE.md.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
@@ -53,13 +53,13 @@ While I didn't directly reference any code from these, [William Sokol's head tra
 
 The **main thread in app.py** calls the start_level function in levels.py to start a level (still on main thread, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
 
-The levels.py **start_level** function makes custom GUI Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then passes the references of these to the level_setup function. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
+The levels.py **start_level** function makes custom GUI Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then calls the **setup_level** function to make the needed objects. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
 
-The level_setup function finally **makes the level thread**; Keep in mind the camera thread was already created by start_level. The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
+The start_level function finally **makes the level thread to run the level function**; The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
 
 **The game logic thread runs the function corresponding to the level selected. Writing one of these functions is how one writes a level.**
 
-Finally with those two threads running in the background, **we turn our attention back to the main thread,** currently blocking the GUI as it's still completing the levels.py function call. The levels.py function **returns the new GUI objects and the pointers to the two running threads** back to the awaiting main class. The GUI resumes being responsive, allowing you to gracefully quit the threads and program.
+Finally with those two threads running in the background, **we turn our attention back to the main thread,** currently blocking the GUI as it's still completing the levels.py function call. The levels.py function **returns the new GUI objects and the pointers to the two running threads** back to the awaiting main class. The GUI resumes being responsive with references to all objects and threads, allowing you to gracefully quit.
 
 When the level is quit, a signal is sent for all the threads to gracefully exit and the QObjects holding the level UI and signals are destroyed.
 
@@ -71,6 +71,8 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
             |_____________|_______________|
              only to tell them start/stop
 
+Also, this is using the python threading module, so the python GIL is still in place. 
+
 <br>
 
 ###  Machine Learning Models 
@@ -79,7 +81,7 @@ This program uses machine learning to detect and classify the user's input. The 
 
 If you plan to create your own models to detect different kinds of poses as input, a helper file is included to capture pose data and a training file for creating a random forest classifier in scikit using that data. You can use a different model - just update the exercise detection function in the Pose_Estimation class to use your own model (make sure to import the proper libraries if you aren't using scikit learn). I personally recomment sticking to a random forest classifier, as it's generally good "out of the box" when it comes to high dimensional data with few training examples, and inference calculation time is relatively fast compared to other multi-class classifiers. That being said, ML model performance depends on a ton of factors and can often be counterintuitive - if you build a model that works particularly well, please feel free to share it!
 
-**<u>ADDENDUM:</u>** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from **<u>unconsenting netizens and artists</u>** to train their models. In addition to this being a **<u>violation of ethics</u>**, it also results in undocumented training datasets which cannot be easily checked for problems. 
+**<u>ADDENDUM:</u>** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from **<u>unconsenting netizens and artists</u>** to train their models. In addition to this being a **<u>violation of ethics</u>**, it also results in undocumented training datasets which cannot be easily checked for problems.
 
 I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, it gives me hope that the researchers have taken the proper ethical considerations - both to mitigate bias and to respect the wishes of the people in the training images. 
 
