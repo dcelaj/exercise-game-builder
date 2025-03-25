@@ -13,7 +13,7 @@ The project file structure is as follows:
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets. Right now there are two NPCs and two backgrounds hastily put together for testing and demo. Feel free to delete anything here and replace with your own assets (except for blank.png, since that's used as a default case).
 - The **models** folder contains the machine learning models used in the game.
     - **You'll have to download the mediapipe model yourself** [here](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) and put it in the mediapipe folder.
-    - The exercise detection model I've created is included with some helper files to create your own model - info in the helper comments.
+    - The exercise detection model I've created is included with some helper files to create your own model - more info below.
 - The **output** folder is used to collect any file outputs, mainly for debugging but also for config.
 - The **source folder** contains all the python code and modules.
 - The plan png file is a **REALLY** rough sketch of how everything was set up and planned.
