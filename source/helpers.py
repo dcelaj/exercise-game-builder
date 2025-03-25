@@ -37,12 +37,11 @@ import os
 import enumoptions as op
 
 '''
-This is gonna be helper functions to be used in the levels.py file to make it a lot more streamlined to build a level
-This should not be accessed by pose estim, nor pose estim by this.
+These are helper functions to aid in building the GUI, creating animations, and changing the existing GUI in a thread 
+safe way. This should not be accessed by pose estim, nor pose estim by this.
 
-This essentially contains some custom UI elements and animations to move around sprites. Also the signal handler for QT.
-If you plan to port this over to a different GUI library, the signal handler is probably the most important thing here.
-It is the first class in the document.
+If you plan to port this over to a different GUI library, the event invoker is probably the most important thing here.
+It comprises the first two classes, first variable, and first function in the document.
 '''
 
 ########## 
@@ -955,4 +954,4 @@ def pixel_to_norm(pixel_value: int, mode: int, resolution: tuple =None):
 #########
 # TODO Maybe some helper functions for background QImage manipulation?
 # TODO Maybe some helper functions for custom animations?
-# TODO: ADD MEDIAPIPE ANNOTATION OR MAKE YOUR OWN FUNC
+# TODO: Make custom mediapipe annotation function

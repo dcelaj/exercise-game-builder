@@ -64,7 +64,7 @@ class MainWindow(QMainWindow):
         self.lvl_select_lay.addWidget(self.label)
         self.lvl_select_page.setLayout(self.lvl_select_lay)
         # Level Select Buttons
-        for i in range(0, 6):  # Creating 5 buttons with values 1 to 5
+        for i in range(0, 6):  # Creating 6 buttons with values 0 to 5
             level_button = QPushButton(f"Level {i}")
             level_button.clicked.connect(lambda checked, x=i: self.level_button_clicked(x))
             self.lvl_select_lay.addWidget(level_button)

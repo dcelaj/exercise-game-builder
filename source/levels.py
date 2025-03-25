@@ -49,9 +49,6 @@ def start_level(parent_ref:QObject | None, level=0):
     overlay.dialogue_box.SIGNAL.CLOSE.connect(parent_ref.close_children)
     overlay.show()
 
-    
-    #return level, 0, 0, 0, 0, 0 #TODO DELETE THIS IS JUST A TEST STOP
-
     # Starting camera ML thread...
     camera_thread = pe.Pose_Estimation()
     camera_thread.daemon = True
@@ -60,7 +57,7 @@ def start_level(parent_ref:QObject | None, level=0):
     # The invoker was already instantiated on importing helpers.py, and that allows sending GUI commands to execute from main thread
     game_loop = Event()
 
-    #__________________________
+    # LEVEL SELECTION
 
     # Calling function of selected level in another thread
     match level:
@@ -79,17 +76,13 @@ def start_level(parent_ref:QObject | None, level=0):
             level_thread.start()
 
         case 1:
-            print("\nLevel 1 Slected!")
-            print("Starting level1 thread...")
+            # TODO: Make skeleton case the user can copy/paste and modify
+            pass
 
         case _: # Default is the Demo Level
             print("\nERROR: Level does not exist")
             print("Starting default level...")
-
-            # Use the demo level as the default case
-            print("Starting demo_level thread...")
-
-            setup_objects =  setup_demo()
+            setup_objects =  setup_demo(scene)
             
             level_thread = Thread(target=level_demo, args=[scene, view, overlay, setup_objects, game_loop, camera_thread])
             level_thread.daemon = True

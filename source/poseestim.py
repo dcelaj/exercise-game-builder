@@ -45,12 +45,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 def preprocess(result):
     '''
     Reformats **MediaPipe Results object** into ordered list of numbers. If no
-    detection, returns None, otherwise returns a list.
-
-    Might be worth adding in a check for head visibility (points 1 thru 10) and
-    discarding them if too low. The BlazePose neural network architecture that
-    MediaPipe relies on uses face detection as a proxy for person detection, so
-    points that can't detect a face may be unreliable.  
+    detection, returns None, otherwise returns a list.  
     '''
     # Abbreviation for...
     body_pt = mp.solutions.pose.PoseLandmark        # the body landmark enumerations in mediapipe
@@ -61,13 +56,10 @@ def preprocess(result):
     parsed_list = []
 
     # INPUT HANDLING AND DATA DISCARDING 
-    # TODO: Implement discarding the invisible head data - have a lot of pts to check, 0-10
-    # Maybe for efficiency only check nose vis (point 0) 
     if (len(pose_landmarks_list) == 0) or (False):
         return None
 
-    # Parsing the results object that google has insanely poor documentation for
-    # to extract the landmark values we're interested int
+    # Parsing the results object to extract the landmark values we're interested in
     for idx in range(len(pose_landmarks_list)):
         pose_landmarks = pose_landmarks_list[idx]   # for some god unknown reason it's a 2d list with only one column
 
@@ -120,12 +112,6 @@ class Pose_Estimation(Thread):
     - _ex_model: JobLib Object
     - _options: MediaPipe Object
     - _exists: bool
-
-    Example usage:
-        import poseestim.py as pe
-        t1 = pe.Pose_Estimation()
-        print('Current estimated landmarks: ', t1.mp_results)
-        print('Doing the exercise correctly?: ', bool(t1.ex_results[-1]))
     '''
 
     # Protected Class Variable - TODO: Singleton Pattern
@@ -207,8 +193,7 @@ class Pose_Estimation(Thread):
         feeds it the cleaned up data, then hands back the prediction to be appended to FIFO deque.
         "Private" function.
 
-        Takes the mp results object as input. Yes this could have just used self., but this feels
-        better for data safety convention.
+        Takes the mp results object as input.
 
         Arguments: (besides self)
         - mp_rslt, the mediapipe results object
@@ -220,7 +205,7 @@ class Pose_Estimation(Thread):
 
         # Check if there was a detection, then feed into model to get prediction
         if clean is not None:
-            # making into numpy array so it can be fed into model and reshape to show single sample
+            # Making into numpy array so it can be fed into model and reshape to show single sample
             input = np.array(clean).reshape(1, -1) 
             prediction = self._ex_model.predict(input)
         else:
@@ -272,8 +257,6 @@ class Pose_Estimation(Thread):
         Returns the default mediapipe annotation results as an image in ndarray form. 
         Two optional arguments, first if true hides the camera and annotates a black background.
         Second if true makes it fully thread safe but slightly slower.
-
-        I recommend using a different visualizer if you're making a game since this is pretty bare bones.
         '''
 
         # Quicker vs thread safe

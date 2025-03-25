@@ -4,11 +4,11 @@ This folder contains an exercise detection random forest model and  three python
 
 <code>data_gatherer.py</code> is a small app to help gather pose data. It excludes all points beyond the wrist and ankle, and also excludes the eyes and mouth. To change this, change the <code>ignore</code> variable in the <code>preprocess</code> function in <code>data_gatherer.py</code> (and also in <code>poseestim.py</code> if you're implementing the new model you create).
 
-<coder>randforest_creator.py</code> is a small script to combine the data into one and train a random forest model on it.
+<code>randforest_creator.py</code> is a small script to combine the data into one and train a random forest model on it.
 
 The third python file is <code>enumop2.py</code>, which just contains file paths to the models so you can change them there easily rather than dive into the code. Similar to <code>enumoptions.py</code> in source directory.
 
-Finally, I'm aware Google's "Teachable Machine" has a similar use to this, but it can only train the model using transfer learning, losing the ability to just predict the body coordinates. It would also make switching between models (lite, full, heavy) impractical if not impossible.
+Finally, I'm aware Google's "Teachable Machine" has a similar use to this, but it can only train the model using transfer learning, losing the ability to just predict the body coordinates. It would also make switching between models (lite, full, heavy) extremely impractical.
 
 # How to Use
 

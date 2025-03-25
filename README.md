@@ -23,7 +23,7 @@ The project file structure is as follows:
 The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
-    - You probably want yo make your own custom GUI that isn't so bare bones; the only function you really have to preserve is **clicked_level_button**, since that sets up the play area and recieves the thread pointers.
+    - You probably want to make your own custom GUI that isn't so bare bones; the only functions you really have to preserve are **level_button_clicked** and **close_level**, since those set up the play area, recieve the thread pointers, and gracefully terminates them.
     - **This is the file you'll run to get the game running.**
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the functions for the game logic... 
@@ -31,16 +31,15 @@ The source folder contains:
         - and a **level** func for the actual game logic and events to run in that new level thread.
     - ...and slightly edit the **starter** function (designed to be called from the main GUI and return the references/pointers to those objects and threads) by adding the case for your level.
     - The game logic thread will access info from the pose estim thread and use helper functions to react to what the player does - really sending messages to the main GUI thread to show the visuals reacting to the player's actions.
-    - More info on what to do in GUIDE.md.
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
-    - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
+    - You'd only be altering this if you wanted to add a new type of pose to detect.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
-    - It also contains the **event invoker function**, which is needed for the different threads to safely interact with the Qt GUI.
+    - It also contains the **event invoker function**, which is needed for the different threads to safely interact with the Qt GUI. If you want to use a different GUI library, you'll want to find a replacement for this.
 - **enumoptions.py** contains some enums for more readable options and also file path stuff.
 
 ## Credits
 
-In addition to all the packages, software, and hardware which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide and [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt. Finally, I used some code from [this post](https://stackoverflow.com/questions/44264852/pyside-pyqt-overlay-widget), specifically user Armatita's answer, to make the transparent overlay in PySide.
+In addition to all the packages, software, hardware, and overall technology which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide, [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt, and [Armatita's stackoverflow answer](https://stackoverflow.com/questions/44264852/pyside-pyqt-overlay-widget) to make the transparent overlay in PySide. Finally, [chfoo and Petter's stackoverflow answers](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) on safely posting events to the main thread were a godsend.
 
 While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version, his video had some pretty valuble insight that MediaPipe's documentation lacks).
 
@@ -56,7 +55,7 @@ The demo assets were all made by me, mostly hand drawn with some nearly decade o
 
 The **main thread in app.py** calls the start_level function in levels.py to start a level (still on main thread, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
 
-The levels.py **start_level** function makes custom GUI Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then calls the **setup_level** function to make the needed objects. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
+The levels.py **start_level** function makes a few custom Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then calls the **setup_level** function to make the needed objects specific to the selected level. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
 
 The start_level function finally **makes the level thread to run the level function**; The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
 
@@ -74,7 +73,7 @@ When the level is quit, a signal is sent for all the threads to gracefully exit 
             |_____________|_______________|
              only to tell them start/stop
 
-Also, this is using the python threading module, so the python GIL is still in place. 
+This is all done using the python threading module, so the python GIL is still in place. 
 
 <br>
 
