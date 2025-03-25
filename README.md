@@ -112,3 +112,4 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
     - FAQ page should also cover how to write and edit the damn level.py functions because they got a little confusing
 - [ ] Make custom image annotation function in helpers
 - [ ] Add in support for config file to store pref for model used, etc
+- [ ] Add a tester python file that mimics the cam/pose output with dummy data so user doesn't have to wait 5-6 seconds every time to test a level
