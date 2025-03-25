@@ -110,5 +110,5 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Finish demo level
 - [ ] Write guide on how to use
 - [ ] Make custom image annotation function in helpers
-- [ ] Add in support for config file to store preferences (model used, player name, etc...)
+- [ ] Add in support for config file to store preferences (console log, model used, player name, etc...)
 - [ ] Add a tester python file that mimics the cam/pose output with dummy data so user doesn't have to wait 5-6 seconds every time to test a level
