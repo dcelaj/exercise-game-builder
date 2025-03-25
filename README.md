@@ -44,7 +44,7 @@ In addition to all the packages, software, and hardware which made this project 
 
 While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version, his video had some pretty valuble insight that MediaPipe's documentation lacks).
 
-The demo assets were all made by me, mostly hand drawn with some nearly decade old acrylic paints I had from an old art class. One was done on [Blender](https://www.blender.org/). All images were digitally edited in [Krita](https://krita.org/en/). Highly recommend both programs, very fun to mess around in, and they're free so you've nothing to lose.
+The demo assets were all made by me, mostly hand drawn with some nearly decade old acrylic paints I had from an old art class. One was done in [Blender](https://www.blender.org/). All images were digitally edited in [Krita](https://krita.org/en/). Highly recommend both programs, very fun to mess around in, and they're free so you've nothing to lose.
 
 </br>
 <hr>
@@ -111,3 +111,4 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Add FAQ page for people using this unfamiliar with QT only using this to make a game (cover how to do an animation, change background, the custom classes provided, etc)
     - FAQ page should also cover how to write and edit the damn level.py functions because they got a little confusing
 - [ ] Make custom image annotation function in helpers
+- [ ] Add in support for config file to store pref for model used, etc
