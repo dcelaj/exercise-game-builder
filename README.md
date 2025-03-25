@@ -2,11 +2,9 @@
 
 This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Pandas, Numpy, and Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
-I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, feel free to use any of this code to make a proper game (just abide by the licensing rules of the packages used). As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself.
+I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, **feel free to use any of this code** to make a proper game (just abide by the licensing rules of the packages used). Just be aware that there's no proper example level yet, but it is functional (the code is, the app is mainly dummy buttons for structure). I plan to update with a complete demo level, a skeleton, and a small written guide on how to use it. 
 
-Eventually I hope to make a C library to port MediaPipe into a proper game engine like Godot, but for now this serves as a solid first step. 
-
-If you want to use this: feel free to! Just be aware that there's no proper example level yet, but it is functional (the code is, the app is mainly dummy buttons for structure). I plan to update with a complete demo level, a skeleton, and a small written guide on how to use it. 
+As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself.
 
 ## Project Structure
 
@@ -37,7 +35,7 @@ The source folder contains:
 - **poseestim.py**, this file contains all the code for the camera and machine learning libraries for pose estimation - it uses mediapipe for the pose and feeds those numbers into other models depending on the exercise being done.
     - You'd only be altering this if you wanted to add a new type of exercise to detect - not suggested for beginners.
 - **helpers.py**, this file contains the code for the other aspects of the game, mainly the animations and dialogue. You might be adding some stuff here too if you wanna make custom animations.
-    - It also contains the **event invoker function**, which is needed for the different threads to safely interact with the QT GUI.
+    - It also contains the **event invoker function**, which is needed for the different threads to safely interact with the Qt GUI.
 - **enumoptions.py** contains some enums for more readable options and also file path stuff.
 
 ## Credits
@@ -112,4 +110,4 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
 - [ ] Add FAQ page for people using this unfamiliar with QT only using this to make a game (cover how to do an animation, change background, the custom classes provided, etc)
     - FAQ page should also cover how to write and edit the damn level.py functions because they got a little confusing
-- [ ] Make custom image annotation func
+- [ ] Make custom image annotation function in helpers
