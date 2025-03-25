@@ -8,12 +8,12 @@ from PySide6.QtWidgets import (
     QStackedWidget,
 )
 from PySide6.QtGui import Qt
-import sys
 from time import sleep
-import levels
-from helpers import Level_Widget
+from helpers import Level_Widget #
+import sys
+import levels #
 
-# Subclass QMainWindow to customize your application's main window
+# Subclassing QMainWindow
 class MainWindow(QMainWindow):
 
     def __init__(self):
@@ -105,17 +105,16 @@ class MainWindow(QMainWindow):
             self.started = True
             self.navigate_to(4)
             self.game_loop, self.cam_thread, self.lvl_thread, s, v, o = levels.start_level(self.play_page, value)
-        else:
-            return 0
+            # If anything goes wrong, check to make sure it's not the garbage collector deleting s v o
 
     def close_level(self):
-        # The custom widget should have already killed its children at this point
+        # The custom widget should have already killed its children at this point (thus deleting Qt's C++ objects)
         # Safely closing threads
         self.cam_thread.stop()
         self.game_loop.clear()
         self.cam_thread.join()
         self.lvl_thread.join()
-        # Freeing up name same (relying on python garbage collector to delete object after this)
+        # Freeing up name space (relying on python garbage collector to delete python objects after this)
         self.cam_thread = None
         self.lvl_thread = None
         self.game_loop = None

@@ -101,7 +101,6 @@ class Level_Widget(QWidget):
             child.deleteLater() # Kills C++ object, python refs should still be deleted later
         
         self.SIGNAL.CLOSE.emit()
-            
 
 ### Player Portrait 
 class Player_Portrait(QWidget):
@@ -111,7 +110,7 @@ class Player_Portrait(QWidget):
     Parent is technically an optional argument, but 99% of time you'll wanna do parent=self
     '''
     # Constructor
-    def __init__(self, player_name: str, rel_w=.125, rel_h=.25, still_portrait=False, show_name=True, show_coords=False, parent=None):
+    def __init__(self, player_name: str, rel_w=.125, rel_h=.225, still_portrait=False, show_name=True, show_coords=False, parent=None):
         # Init 
         super(Player_Portrait, self).__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -127,7 +126,7 @@ class Player_Portrait(QWidget):
         self.p_h = int(h * rel_h)
         # Size of image or vid within that portrait
         width = int(w * (rel_w - .027))
-        height = int(h * (rel_h - .067))
+        height = int(h * (rel_h - .043))
         self.video_size = QSize(width, height)
 
         # Variable to hold new input frame
@@ -153,13 +152,13 @@ class Player_Portrait(QWidget):
             self.display_name = QLabel(self._player_name)
             self.display_name.setStyleSheet(
                 "font-family: Helvetica, sans-serif; color: rgb(230, 230, 230);")
-            self.name_xyz_layout.addWidget(self.display_name, alignment=Qt.AlignCenter)
+            self.name_xyz_layout.addWidget(self.display_name, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
         if self._show_name and self._show_coords:
             # Separator if name and coord are both displayed
             self.name_spacer = QLabel(" - ")
             self.name_spacer.setStyleSheet(
             "font-family: Helvetica, sans-serif; color: rgb(230, 230, 230);")
-            self.name_xyz_layout.addWidget(self.name_spacer)
+            self.name_xyz_layout.addWidget(self.name_spacer, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
         if self._show_coords:
             self.head_x = QLabel()
             self.head_y = QLabel()
@@ -170,9 +169,9 @@ class Player_Portrait(QWidget):
                 "font-family: Helvetica, sans-serif; color: rgb(230, 230, 230);")
             self.head_z.setStyleSheet(
                 "font-family: Helvetica, sans-serif; color: rgb(230, 230, 230);")
-            self.name_xyz_layout.addWidget(self.head_x)
-            self.name_xyz_layout.addWidget(self.head_y)
-            self.name_xyz_layout.addWidget(self.head_z)
+            self.name_xyz_layout.addWidget(self.head_x, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
+            self.name_xyz_layout.addWidget(self.head_y, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
+            self.name_xyz_layout.addWidget(self.head_z, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
 
         # Status bar (just HP in this case)
         self.stat_layout = QHBoxLayout()
@@ -208,9 +207,10 @@ class Player_Portrait(QWidget):
         # Arranging the layout
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.main_layout.addWidget(self.frame_label, alignment=Qt.AlignCenter)
+        self.main_layout.addWidget(self.frame_label, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
         self.main_layout.addLayout(self.name_xyz_layout)
         self.main_layout.addLayout(self.stat_layout)
+        self.main_layout.addStretch()
         #
         self.main_layout.setSizeConstraint(QLayout.SetFixedSize)
 
@@ -297,7 +297,7 @@ class NPC_Portrait(QWidget):
     since instantiation is done within another widget and hard for user to access...
     '''
     # Constructor
-    def __init__(self, npc_name: str, img_paths: list, rel_w=.125, rel_h=.25, parent=None):
+    def __init__(self, npc_name: str, img_paths: list, rel_w=.125, rel_h=.225, parent=None):
         # Init 
         super(NPC_Portrait, self).__init__(parent)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -310,14 +310,14 @@ class NPC_Portrait(QWidget):
         self.p_h = int(h * rel_h)
         # Size of image or vid within that portrait
         width = int(w * (rel_w - .027))
-        height = int(h * (rel_h - .067))
+        height = int(h * (rel_h - .043))
         self.img_size = QSize(width, height)
 
         # Input handling - if only one str path provided
         if type(img_paths) is str:
             img_paths = [img_paths]
         if img_paths is None:
-            img_paths = [str(os.path.join(op.root_dir, "assets", "placeholder.png"))]
+            img_paths = [str(os.path.join(op.root_dir, "assets", "characters", "blank.png"))]
         elif type(img_paths) is not list:
             raise Exception("img_paths must be either a string or list of strings containing image paths")
         
@@ -346,8 +346,8 @@ class NPC_Portrait(QWidget):
         
         # Arranging the layout
         self.main_layout = QVBoxLayout()
-        self.main_layout.addWidget(self.frame_label, alignment=Qt.AlignCenter)
-        self.main_layout.addWidget(self.name_label, alignment= Qt.AlignCenter)
+        self.main_layout.addWidget(self.frame_label, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
+        self.main_layout.addWidget(self.name_label, alignment=Qt.AlignVCenter|Qt.AlignHCenter)
         self.main_layout.addStretch()
         #
         self.main_layout.setSizeConstraint(QLayout.SetFixedSize)
@@ -635,13 +635,14 @@ class Overlay(QWidget):
 
         # Calculating fullscreen positioning of various elements 
         o_rel_point = self.make_nice_relative_positioning(0)
+        np_rel_point = self.make_nice_relative_positioning(1)
         d_rel_point = self.make_nice_relative_positioning(2)
         pp_rel_point = self.make_nice_relative_positioning(3)
 
         # Moving widgets in place
         self.dialogue_box.move(d_rel_point.x(), d_rel_point.y())
         self.pp.move(pp_rel_point.x(), pp_rel_point.y())
-        self.np.move(o_rel_point.x(), o_rel_point.y())
+        self.np.move(np_rel_point.x(), np_rel_point.y())
 
     def paintEvent(self, event):
         # Drawing the overlay design
@@ -699,14 +700,13 @@ class Overlay(QWidget):
         elif itm == 1:
             # ... of NPC portrait
             overlay_width = self.fs_width * w
-            ox = int((self.fs_width / 2) - (overlay_width / 2))
-            o_abs_point = QPoint(ox, oy)
-            o_rel_point = self.mapFromGlobal(o_abs_point)
+            nx = int((self.fs_width / 2) - (overlay_width / 2)) + int(self.fs_width * 0.003) 
+            n_abs_point = QPoint(nx, oy)
+            n_rel_point = self.mapFromGlobal(n_abs_point)
             # Since we're positioning from corner and not center, we'd have to account for
-            # the overlay left side stroke being 0.0125 (1.25%) ... BUT portrait widget
-            # already has blank space allocated for that (if using default size), so we can 
-            # reuse overlay pos
-            return o_rel_point
+            # the overlay left side stroke being 0.0125 (1.25%) ... the portrait widget should
+            # account for it, but it seemingly does not work so we're adding a small buffer
+            return n_rel_point
         elif itm == 2:
             # ... of only the dialogue box
             dialogue_size = self.dialogue_box.get_size_tuple()
@@ -719,11 +719,11 @@ class Overlay(QWidget):
         elif itm == 3:
             # ... of only the player portrait
             dialogue_size = self.dialogue_box.get_size_tuple()
-            ppx = int((self.fs_width / 2) - (dialogue_size[0] / 2)) + dialogue_size[0]
+            ppx = int((self.fs_width / 2) - (dialogue_size[0] / 2)) + dialogue_size[0] + int(self.fs_width * 0.0125) 
             pp_abs_point = QPoint(ppx, oy) # y val is constant
             pp_rel_point = self.mapFromGlobal(pp_abs_point)
-            # Player portrait also accounts for the 1.25% width size stroke/border, so just
-            # place it after the dialogue box pos (plus its width)
+            # Player portrait also accounts for the 1.25% width size stroke/border, but it's
+            # not working properly so adding a buffer anyway
             return pp_rel_point
         else:
             raise Exception("Only accepts ints from 0 to 3. See docstring.")
