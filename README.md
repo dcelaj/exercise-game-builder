@@ -6,7 +6,7 @@ I've structured the project so that it's simple for others to modify it and add 
 
 Eventually I hope to make a C library to port MediaPipe into a proper game engine like Godot, but for now this serves as a solid first step. 
 
-If you want to use this: feel free to! Just be aware that there's no proper example level yet, but it is functionaL. I plan to update with a complete demo level, a skeleton, and a small written guide on how to use it.
+If you want to use this: feel free to! Just be aware that there's no proper example level yet, but it is functional (the code is, the app is mainly dummy buttons for structure). I plan to update with a complete demo level, a skeleton, and a small written guide on how to use it. 
 
 ## Project Structure
 
@@ -14,7 +14,7 @@ The project file structure is as follows:
 
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets. Right now there are two NPCs and two backgrounds hastily put together for testing and demo. Feel free to delete anything here and replace with your own assets (except for blank.png, since that's used as a default case).
 - The **models** folder contains the machine learning models used in the game.
-    - **You'll have to download the mediapipe model yourself** with the link in the text file provided.
+    - **You'll have to download the mediapipe model yourself** [here](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) and put it in the mediapipe folder.
     - The exercise detection model I've created is included with some helper files to create your own model - info in the helper comments.
 - The **output** folder is used to collect any file outputs, mainly for debugging but also for config.
 - The **source folder** contains all the python code and modules.
@@ -26,6 +26,7 @@ The source folder contains:
 
 - **app.py**, the main file, it includes GUI elements, event loop, and calls functions from the levels file to start an exercise set. You'd only need to edit in buttons here if you plan to use this youself.
     - You probably want yo make your own custom GUI that isn't so bare bones; the only function you really have to preserve is **clicked_level_button**, since that sets up the play area and recieves the thread pointers.
+    - **This is the file you'll run to get the game running.**
 - **levels.py**, this file contains the levels and is the file you'll probably be adding to most heavily if you're using this for a custom game. It references the poseestim and helpers files to construct the actual gameplay in a level.
     - To make a level, you'll want to write the functions for the game logic... 
         - One **setup** func for instantiating - from the main thread - the objects needed in your level,
@@ -41,11 +42,11 @@ The source folder contains:
 
 ## Credits
 
-In addition to all the packages and technologies which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide and [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt.
+In addition to all the packages, software, and hardware which made this project possible, I'd like to credit some material which I used as reference along the way - particularly [PythonGUIs.com's PySide 6 tutorials](https://www.pythonguis.com/pyside6-tutorial/). I also referenced github user [bsdnoobz's code](https://gist.github.com/bsdnoobz/8464000) on reading a camera feed with PySide and [Boris Runa's post](https://forum.qt.io/topic/132670/capture-opencv-video-and-present-it-on-qvideowidget) on the Qt forums on doing the same with PyQt. Finally, I used some code from [this post](https://stackoverflow.com/questions/44264852/pyside-pyqt-overlay-widget), specifically user Armatita's answer, to make the transparent overlay in PySide.
 
 While I didn't directly reference any code from these, [William Sokol's head tracking project](https://github.com/williamsokol/HeadTrackingInGodotHTML5) sparked the initial project idea, and [Nicholas Renotte has a similar MediaPipe project](https://github.com/nicknochnack/MediaPipePoseEstimation) to my program (although his code is outdated for the current mediapipe version, his video had some pretty valuble insight that MediaPipe's documentation lacks).
 
-The demo assets were all made by me, mostly hand drawn with some nearly decade old acrylic paints I had from an old art class. One was done on blender.
+The demo assets were all made by me, mostly hand drawn with some nearly decade old acrylic paints I had from an old art class. One was done on [Blender](https://www.blender.org/). All images were digitally edited in [Krita](https://krita.org/en/). Highly recommend both programs, very fun to mess around in, and they're free so you've nothing to lose.
 
 </br>
 <hr>
@@ -85,9 +86,11 @@ This program uses machine learning to detect and classify the user's input. The 
 
 If you plan to create your own models to detect different kinds of poses as input, a helper file is included to capture pose data and a training file for creating a random forest classifier in scikit using that data. You can use a different model - just update the exercise detection function in the Pose_Estimation class to use your own model (make sure to import the proper libraries if you aren't using scikit learn). I personally recomment sticking to a random forest classifier, as it's generally good "out of the box" when it comes to high dimensional data with few training examples, and inference calculation time is relatively fast compared to other multi-class classifiers. That being said, ML model performance depends on a ton of factors and can often be counterintuitive - if you build a model that works particularly well, please feel free to share it!
 
-**<u>ADDENDUM:</u>** It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from **<u>unconsenting netizens and artists</u>** to train their models. In addition to this being a **<u>violation of ethics</u>**, it also results in undocumented training datasets which cannot be easily checked for problems.
+#### **<u>ADDENDUM:</u>**
 
-I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, it gives me hope that the researchers have taken the proper ethical considerations - both to mitigate bias and to respect the wishes of the people in the training images. 
+ It's important to acknowledge that while ML and AI are extremely useful tools, they are imperfect and prone to bias. Furthermore, many corporations have felt emboldened to scrape data from **<u>unconsenting netizens and artists</u>** to train their models. In addition to this being a **<u>violation of ethics</u>**, it also results in undocumented training datasets which cannot be easily checked for problems.
+
+I have trained the random forest models myself, and since I am only one person with one body, there might be some overfitting. To mitigate this, I have provided some tools to make your own training data. As for the mediapipe pose estimation model, they do not explicitly say which dataset they use; However, as the scale of the dataset is small enough to where they have all been human labelled, it gives me hope that the researchers have taken the proper ethical considerations - both to mitigate bias and to respect the wishes and **rights** of the people in the training images. 
 
 <br>
 
@@ -101,18 +104,12 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 
 ### Possible improvements / TODO
 
-- [x] Consider moving MediaPipe's image annotation to helpers.py to spread the loads between threads more evenly
-    - I think I'm **not** going to do this, because it would be messier and harder to use
-    - **BUT** I will leave it as a global function *outside* the poseestim thread, which the game logic thread can use to draw. This doesn't change any imports either.
-    - Might consider making a custom one in helpers for more style
 - [x] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
     - I can't image this isn't being done, since accepting different resolutions would complicate the neural net heavily. But worth checking.
     - Blazepose paper says it does, so **no action** will be taken.
 - [x] Implement relative file paths for using the models - **done**
-- [ ] Consider adding a check to see if (upon attempting to grab a new frame **for player video portrait**) you're actually changing the image or performing operations for nothing.
-    - Not sure how computationally intensive repainting a duplicate frame even is compared to checking if two images are the same ... maybe carry out further tests later on if FPS gets low - **or maybe just paint the frame once every n game loop cycles if repainting slows down the GUI thread.**
-    - similarly, maybe add a head visibility check for the data gatherer py file
+- [x] Consider adding a head visibility check - the model uses face detection as a surrogate for person detection, so data points with low face vis might be bad... but also accurate to how the model would see a pose in action. Probably best to **keep the raw data**, visibility is included as a parameter anyway and RF models are good at picking up on such straightforward relationships.
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
 - [ ] Add FAQ page for people using this unfamiliar with QT only using this to make a game (cover how to do an animation, change background, the custom classes provided, etc)
-    - FAQ page should also cover HOW TO WRITE AND EDIT THE DAMN LEVEL.PY FUNCTIONS BECAUSE IT GOT A LITTLE CONFUSING
-
+    - FAQ page should also cover how to write and edit the damn level.py functions because they got a little confusing
+- [ ] Make custom image annotation func
