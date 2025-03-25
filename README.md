@@ -108,8 +108,8 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [x] Implement relative file paths for using the models - **done**
 - [x] Consider adding a head visibility check - the model uses face detection as a surrogate for person detection, so data points with low face vis might be bad... but also accurate to how the model would see a pose in action. Probably best to **keep the raw data**, visibility is included as a parameter anyway and RF models are good at picking up on such straightforward relationships.
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
-- [ ] Add FAQ page for people using this unfamiliar with QT only using this to make a game (cover how to do an animation, change background, the custom classes provided, etc)
-    - FAQ page should also cover how to write and edit the damn level.py functions because they got a little confusing
+- [ ] Finish demo level
+- [ ] Write guide on how to use
 - [ ] Make custom image annotation function in helpers
-- [ ] Add in support for config file to store pref for model used, etc
+- [ ] Add in support for config file to store preferences (model used, player name, etc...)
 - [ ] Add a tester python file that mimics the cam/pose output with dummy data so user doesn't have to wait 5-6 seconds every time to test a level
