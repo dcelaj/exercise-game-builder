@@ -1,6 +1,6 @@
 # Exercise Game Builder
 
-This is a small exercise game programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Pandas, Numpy, and Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
+This is a small exercise game builder programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Pandas, Numpy, and Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
 I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, **feel free to use any of this code** to make a proper game (just abide by the licensing rules of the packages used). Just be aware that there's no proper example level yet, but it is functional (the code is, the app is mainly dummy buttons for structure). I plan to update with a complete demo level, a skeleton, and a small written guide on how to use it. 
 
