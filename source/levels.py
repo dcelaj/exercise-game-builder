@@ -233,7 +233,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
         # # Normally you'd only play Qt animations on certain conditions being met though. If you want an idle loop, utilize
         # # the Q_NPC cycle_img function to cycle through frames of an idle animation
 
-#__________________________ 
+#__________________________
 
 # This is where you can write your level functions. Make sure to add a case in the start_level func above to call the setup.
 # Feel free to use the skeleton setup and level provided below in level 1! 
@@ -251,7 +251,52 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
 #
 def setup_1(scene: QGraphicsScene):
     # Making NPC
-    NPC_IMG_1 = os.path.join(op.root_dir, "assets", "characters", "Alice", "YOUR_NPC_IMAGE_1.png")
+    img = os.path.join(op.root_dir, "assets", "characters", "Alice", "YOUR_NPC_IMAGE_1.png")
+    name = hlp.Q_NPC("NAME", [img], 0, 0)
+    scene.addItem(name)
+
+    # Making an Animation
+    anim1 = QPropertyAnimation(name, b'PROPERTY_NAME_TO_ANIMATE')
+    anim1.setStartValue()
+    anim1.setEndValue()
+    anim1.setEasingCurve()
+    # Combining Animations
+    anim2 = QPropertyAnimation(name, b'PROPERTY_NAME_TO_ANIMATE')
+    combo = QParallelAnimationGroup()
+    combo.addAnimation(anim1)
+    combo.addAnimation(anim2)
+
+    # Putting it all in a dict and returning it
+    q_objects = {
+        "NPC Name": name,
+        "Animation": combo
+    }
+    return q_objects
+
 # SKELETON LEVEL
 # 
-#TODO
+def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_list:list|dict,  
+               game_loop:Event, cam_thread:pe.Pose_Estimation):
+    # REMEMBER: Use invoke_in_main_thread (or just invoke) when changing GUI elements
+
+    # Smaller mini setup
+    # Might wanna set starting HP here too
+    # Background
+    bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "YOUR_BACKGROUND_HERE.png")
+    bg_pixmap = QPixmap(bg_path) 
+    bg_pixmap = bg_pixmap.scaledToWidth(w + 50)
+    hlp.invoke(scene.setBackgroundBrush, bg_pixmap)
+    # NPC
+    hlp.invoke(obj_list["NPC Name"].setVisible, True)
+    # Dialogue
+    hlp.invoke(overlay.set_text, "YOUR TEXT HERE")
+
+    # Game loop
+    while game_loop.is_set():
+        # Update player frame if needed
+        frame = cam_thread.get_default_annotation()
+        hlp.invoke(overlay.pp.update_frame, frame)
+
+        # YOUR GAME LOGIC HERE
+
+# _________________________
