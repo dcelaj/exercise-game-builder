@@ -192,7 +192,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     - cam_thread is the camera pose estimation thread that tracks player input
     '''
     # Smaller mini setup 
-    
+
     # Setting background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "moonlit.png")
     bg_path_2 = os.path.join(op.root_dir, "assets", "backgrounds", "gym.png")
@@ -225,11 +225,10 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
         else:
             hlp.invoke(overlay.pp.update_stat_bar, 1)
         
-        # I'll be honest, I don't know why this sleep is necessary, but without it a memory leak occurs.
+        # Because our game loop is way faster than the main thread, we have to sleep a bit. Otherwise, the events we invoke
+        # would pile up faster than qt can take care of them, causing a memory leak.
         sleep(0.001)
-        # I don't know where the leak is, I tried to find it for about an hour before realizing the sleep was what fixed it.
-        # My best guess is the python garbage collector forgets this thread exists until it hits a sleep. Will try a to use
-        # trace malloc to see if I can find more info but otherwise, this fixes all the issues.
+        # Maybe try an ack system in invoke() so it only returns when an event's been processed? Maybe also try EventFilter?
 
 #__________________________
 
