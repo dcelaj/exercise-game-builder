@@ -108,8 +108,10 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [x] Implement relative file paths for using the models - **done**
 - [x] Consider adding a head visibility check - the model uses face detection as a surrogate for person detection, so data points with low face vis might be bad... but also accurate to how the model would see a pose in action. Probably best to **keep the raw data**, visibility is included as a parameter anyway and RF models are good at picking up on such straightforward relationships.
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
-- [ ] Add option to use GPU - **high priority** (runs fine without it, but may slow down if too many apps open)
-- [ ] Make full exercise classifier to replace placeholder mini one & finish demo level
+- [ ] Look into why performance slows when no person in frame - see if MP has early abort option **high priority**
+- [ ] Look into memory usage and allocation with tracemalloc **high priority**
+- [ ] Add option to use GPU - *medium priority* (runs fine without it, but may slow down if too many apps open)
+- [ ] Make full exercise classifier to replace placeholder mini one & finish demo level *medium priority*
 - [ ] Write guide on how to use
 - [ ] Make custom image annotation function in helpers
 - [ ] Add in support for config file to store preferences (console log, model used, player name, etc...)

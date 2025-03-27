@@ -192,7 +192,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     - cam_thread is the camera pose estimation thread that tracks player input
     '''
     # Smaller mini setup 
-
+    
     # Setting background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "moonlit.png")
     bg_path_2 = os.path.join(op.root_dir, "assets", "backgrounds", "gym.png")
@@ -225,13 +225,11 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
         else:
             hlp.invoke(overlay.pp.update_stat_bar, 1)
         
-        # # ANIMATION 
-        # hlp.invoke(obj_list["a_breathe"].start)
-        # # If a Qt animation is called on loop constantly, it may not work. Use a small sleep to give the animation some time
-        # # to properly start up and work - one millisecond is enough. 
-        # sleep(0.001)
-        # # Normally you'd only play Qt animations on certain conditions being met though. If you want an idle loop, utilize
-        # # the Q_NPC cycle_img function to cycle through frames of an idle animation
+        # I'll be honest, I don't know why this sleep is necessary, but without it a memory leak occurs.
+        sleep(0.001)
+        # I don't know where the leak is, I tried to find it for about an hour before realizing the sleep was what fixed it.
+        # My best guess is the python garbage collector forgets this thread exists until it hits a sleep. Will try a to use
+        # trace malloc to see if I can find more info but otherwise, this fixes all the issues.
 
 #__________________________
 
@@ -249,7 +247,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
 
 # SKELETON SETUP
 #
-def setup_1(scene: QGraphicsScene):
+def setup_1(scene: QGraphicsScene): 
     # Making NPC
     img = os.path.join(op.root_dir, "assets", "characters", "Alice", "YOUR_NPC_IMAGE_1.png")
     name = hlp.Q_NPC("NAME", [img], 0, 0)
@@ -284,7 +282,7 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
     # Background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "YOUR_BACKGROUND_HERE.png")
     bg_pixmap = QPixmap(bg_path) 
-    bg_pixmap = bg_pixmap.scaledToWidth(w + 50)
+    bg_pixmap = bg_pixmap.scaledToWidth(w)
     hlp.invoke(scene.setBackgroundBrush, bg_pixmap)
     # NPC
     hlp.invoke(obj_list["NPC Name"].setVisible, True)
@@ -298,5 +296,8 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
         hlp.invoke(overlay.pp.update_frame, frame)
 
         # YOUR GAME LOGIC HERE
+
+        # Sleep to remind python garbage collector this thread exists
+        sleep(0.001)
 
 # _________________________
