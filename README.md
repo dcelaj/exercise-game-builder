@@ -17,8 +17,9 @@ The project file structure is as follows:
 - The **output** folder is used to collect any file outputs, mainly for debugging but also for config.
 - The **source folder** contains all the python code and modules.
 - The plan png file is a **REALLY** rough sketch of how everything was set up and planned.
-- The requirements text file contains all the packages needed to run this code - I recommend using a python version manager and setting up an environment for this. 
-    - If you use Anaconda/Miniconda as I do, make sure you create an env with python explicitly installed (conda create -n "myenv" python) - otherwise using "pip" will just install the packages to your default python directory rather than the contained environment.
+- The **requirements** text file contains all the packages needed to run this code - I recommend using a python version manager and setting up an environment for this. 
+    - The exact versions of everything I used in development are given in the **version-info** text file. **Python 3.11 is recommended**, anything after 3.11 that can still install the requirements should also work.
+    - If you use Anaconda/Miniconda as I do, make sure you create an env with python explicitly installed (conda create -n "myenv" python=3.11) - otherwise using "pip" will just install the packages to your default python directory rather than the contained environment.
 
 The source folder contains:
 
@@ -107,6 +108,7 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [x] Implement relative file paths for using the models - **done**
 - [x] Consider adding a head visibility check - the model uses face detection as a surrogate for person detection, so data points with low face vis might be bad... but also accurate to how the model would see a pose in action. Probably best to **keep the raw data**, visibility is included as a parameter anyway and RF models are good at picking up on such straightforward relationships.
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
+- [ ] Add option to use GPU - **high priority** (runs fine without it, but may slow down if too many apps open)
 - [ ] Finish demo level
 - [ ] Write guide on how to use
 - [ ] Make custom image annotation function in helpers

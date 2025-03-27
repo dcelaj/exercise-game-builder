@@ -8,30 +8,18 @@ CONTAINS ENUM CLASSES HOLDING VARIOUS OPTIONS USED THROUGHOUT THE PROJECT
 The project mostly uses the .value so this is for readability more than anything. Also for tidying relative paths.
 '''
 
-# Resolving project file paths
-#
-#
-# Resolving the root project directory (in this case, we are 2 layers in so we call parent twice)
+# Resolving project file paths:
+# root project directory (in this case, we are 2 layers in so we call parent twice)
 root_dir = Path(__file__).resolve().parent.parent
-
 # specifying subfolders from project root
 lite_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_lite.task')
 full_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_full.task')
 heavy_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_heavy.task')
 
 exercise_test = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest_ex.joblib')
-#
-#
-#
 
 # Reading config file
-#
-#
-
 # TODO add some code reading the config and resolving any relevant paths 
-
-#
-#
 
 # Exercises supported for detection (exercises being used broadly to mean any pose or movement)
 class Exercises(Enum): # Edit if making new exercise

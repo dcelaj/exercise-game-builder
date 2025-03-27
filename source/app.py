@@ -8,10 +8,9 @@ from PySide6.QtWidgets import (
     QStackedWidget,
 )
 from PySide6.QtGui import Qt
-from time import sleep
-from helpers import Level_Widget #
+from helpers import Level_Widget # Just a custom widget that can delete its own children
 import sys
-import levels #
+import levels # So we can call the start_level function
 
 # Subclassing QMainWindow
 class MainWindow(QMainWindow):

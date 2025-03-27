@@ -73,6 +73,9 @@ def invoke_in_main_thread(fn, *args, **kwargs):
     QCoreApplication.postEvent(_invoker,
         InvokeEvent(fn, *args, **kwargs))
 
+def invoke(fn, *args, **kwargs): # Just to have a shortcut
+    invoke_in_main_thread(fn, *args, **kwargs)
+
 ##########
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
 
@@ -477,7 +480,7 @@ class Dialogue_Text(QWidget):
         self.dialogue_box = QTextEdit(self)
         self.dialogue_box.setCurrentFont(QFont("Helvetica", 18))
         self.dialogue_box.setTextColor(QColor(240, 240, 240, 255))
-        self.dialogue_box.setText("DEFAULT TEXT")
+        self.dialogue_box.setText(" ")
         self.dialogue_box.setReadOnly(True)
         self.dialogue_box.setFixedSize(self.w, self.h)
         # Make it transparent
@@ -535,6 +538,9 @@ class Dialogue_Text(QWidget):
 
     def get_size_tuple(self):
         return self.w, (self.h + int(self.fs_height * 0.025))
+    
+    def set_text(self, text):
+        self.dialogue_box.setText(text)
 
     def save_game(self):
         '''
@@ -573,8 +579,8 @@ class Overlay(QWidget):
 
     DBox can emit signals for saving, loading, and quitting a game - up 
     to main GUI app to connect those and redirect to appropriate page. Do 
-    overlay.dialogue_box.SIGNALS.CLOSE.connect(your_quit_func) to connect 
-    quit button to a graceful exit that also closes threads.
+    overlay.SIGNAL.CLOSE.connect(your_quit_func) to connect your quit game
+    button to a graceful exit that also closes threads.
 
     By default this blocks clicking on the items in the view.
 
@@ -594,6 +600,8 @@ class Overlay(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_DeleteOnClose)
+
+        self.SIGNAL = Overlay_Signals()
 
         # Getting the full screen size
         self.fs_width, self.fs_height = get_avail_geo()
@@ -622,6 +630,7 @@ class Overlay(QWidget):
 
         # Text Edit Dialogue Box
         self.dialogue_box = Dialogue_Text(parent=self)
+        self.dialogue_box.SIGNAL.CLOSE.connect(self.quit_game)
 
         # Automatic resize so it also does paint event
         self.resize(self.fs_width, self.fs_height)
@@ -726,6 +735,12 @@ class Overlay(QWidget):
             return pp_rel_point
         else:
             raise Exception("Only accepts ints from 0 to 3. See docstring.")
+
+    def set_text(self, text):
+        self.dialogue_box.set_text(text)
+    
+    def quit_game(self):
+        self.SIGNAL.CLOSE.emit()
 
 ##########
 # GRAPHICS HELPERS
