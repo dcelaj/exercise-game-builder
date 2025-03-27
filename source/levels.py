@@ -296,7 +296,7 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
 
         # YOUR GAME LOGIC HERE
 
-        # Sleep to remind python garbage collector this thread exists
+        # Sleep to throttle posting events so main thread can keep up
         sleep(0.001)
 
 # _________________________
