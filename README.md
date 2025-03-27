@@ -102,11 +102,6 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 
 ### Possible improvements / TODO
 
-- [x] Look into whether MediaPipe task resizes image internally before processing. If not, downsizing beforehand could improve performance.
-    - I can't image this isn't being done, since accepting different resolutions would complicate the neural net heavily. But worth checking.
-    - Blazepose paper says it does, so **no action** will be taken.
-- [x] Implement relative file paths for using the models - **done**
-- [x] Consider adding a head visibility check - the model uses face detection as a surrogate for person detection, so data points with low face vis might be bad... but also accurate to how the model would see a pose in action. Probably best to **keep the raw data**, visibility is included as a parameter anyway and RF models are good at picking up on such straightforward relationships.
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
 - [ ] Look into why performance slows when no person in frame - see if MP has early abort option **high priority**
 - [ ] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than throttling events with <code>sleep()</code>  *medium priority*
