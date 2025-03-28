@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QFrame,
 )
+from time import sleep
 import numpy as np
 import cv2
 import os
@@ -70,11 +71,26 @@ class Invoker(QObject):
 _invoker = Invoker()
 
 def invoke_in_main_thread(fn, *args, **kwargs):
+    '''
+    Function to invoke an event in the main GUI thread safely from another thread. Don't use too
+    often too quickly or you'll overwhelm main and cause a memory leak. 
+    
+    # Use invoke(fn, args) instead,
+    it has built in buffering of 1 millisecond.
+    '''
     QCoreApplication.postEvent(_invoker,
         InvokeEvent(fn, *args, **kwargs))
 
-def invoke(fn, *args, **kwargs): # Just to have a shortcut
+def invoke(fn, *args, **kwargs): # Just the above func but with a buffer built in
+    '''
+    Same as invoke_in_main_thread but with throttling built in so main thread isn't overwhelmed.
+
+    Our game loop is way faster than the main thread, we have to buffer with sleep. Otherwise, the 
+    events we invoke would pile up faster than qt can take care of them, causing a memory leak.
+    Might experiment with a feedback 'ack' system later, but for now this works fine.
+    '''
     invoke_in_main_thread(fn, *args, **kwargs)
+    sleep(0.001)
 
 ##########
 # LEVEL UI - include classes for video feed, which will eventually take capture input from pose estim but only as input by levels.py
@@ -762,8 +778,8 @@ class Q_NPC(QGraphicsObject):
         the screen) and added a set_norm_pos function that sets position this way for convenience.
         If you'd like to use these relative coords, helpers has a global function norm_to_pixel.
 
-        Assume all variables are private, you can't get a return from invoke_in_main_thread and 
-        acessing a QObject is not thread safe. 
+        Assume all variables are private, you can't get a return from invoke and acessing a QObject 
+        is not thread safe. 
 
         Arguments
         - name, just a string holding name, no real use, more for housekeeping

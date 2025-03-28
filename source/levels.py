@@ -180,8 +180,8 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     This is a level function, where the camera ml results will be read and used as input for the game. This 
     holds the gameplay logic and loop. The arguments are explained below.
 
-    REMEMBER: When you want to use the object_list assets, always use hlpr.invoke_in_main_thread(obj.func, args)
-    to be thread safe. If you want to receive returns from a QObject func, you're gonna have to implement that.
+    REMEMBER: When you want to use the object_list assets, always use hlpr.invoke(obj.func, args) to be thread
+    safe. If you want to receive returns from a QObject func, you're gonna have to implement that.
 
     The arguments are...
     - scene is where all the assets are loaded to
@@ -225,10 +225,6 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
         else:
             hlp.invoke(overlay.pp.update_stat_bar, 1)
         
-        # Because our game loop is way faster than the main thread, we have to sleep a bit. Otherwise, the events we invoke
-        # would pile up faster than qt can take care of them, causing a memory leak.
-        sleep(0.001)
-        # Maybe try an ack system in invoke() so it only returns when an event's been processed? Maybe also try EventFilter?
 
 #__________________________
 
@@ -296,7 +292,5 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
 
         # YOUR GAME LOGIC HERE
 
-        # Sleep to throttle posting events so main thread can keep up
-        sleep(0.001)
 
 # _________________________

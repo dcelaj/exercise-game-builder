@@ -12,7 +12,7 @@ The project file structure is as follows:
 
 - The **assets** folder contains the game art and sound, along with a few other misc items. The art is mainly png files, but I'm considering support for 3D assets. Right now there are two NPCs and two backgrounds hastily put together for testing and demo. Feel free to delete anything here and replace with your own assets (except for blank.png, since that's used as a default case).
 - The **models** folder contains the machine learning models used in the game.
-    - **You'll have to download the mediapipe model yourself** [here](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) and put it in the mediapipe folder.
+    - **You'll have to download the mediapipe models yourself** [here](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) and put them in the mediapipe folder. I recommend downloading all three, as they're all good for different cases (prioritizing responsiveness vs accuracy).
     - The exercise detection model I've created is included with some helper files to create your own model - more info below.
 - The **output** folder is used to collect any file outputs, mainly for debugging but also for config.
 - The **source folder** contains all the python code and modules.
@@ -56,9 +56,9 @@ The demo assets were all made by me, mostly hand drawn with some nearly decade o
 
 The **main thread in app.py** calls the start_level function in levels.py to start a level (still on main thread, just executing a func in levels), passing a level number as an argument and giving some premade empty self variables for it to return to. 
 
-The levels.py **start_level** function makes a few custom Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection** thread. It then calls the **setup_level** function to make the needed objects specific to the selected level. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level while still in the main thread. 
+The levels.py <code>start_level</code> function makes a few custom Qt objects (declared in helper function) to start the basic level GUI while in the main thread. It also **makes the camera pose detection thread**. It then calls the <code>setup_level</code> function to make the needed objects specific to the selected level. There will be a different level_setup function for each level; it is written by the level designer to create any more QObjects unique for their level **while still in the main thread.** 
 
-The start_level function finally **makes the level thread to run the level function**; The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
+The start_level function finally **makes the level thread to run the <code>level_#</code> function**; The game logic thread is given access to the pointers for the camera/pose thread and all the created objects - it will be reading the calulations of the camera/pose thread and causing changes in main using the **event invoker** <code>invoke</code> declared in helper. The event invoker allows calling object functions safely from outside the main thread (basically just adds the function call to the event queue for the main thread to execute, along with a small buffer to prevent overwhelming the main thread). See [the code used](https://stackoverflow.com/questions/10991991/pyside-easier-way-of-updating-gui-from-another-thread) for more information.
 
 **The game logic thread runs the function corresponding to the level selected. Writing one of these functions is how one writes a level.**
 
@@ -103,8 +103,8 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 ### Possible improvements / TODO
 
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
-- [ ] Look into why performance slows when no person in frame - see if MP has early abort option **high priority**
-- [ ] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than throttling events with <code>sleep()</code>  *medium priority*
+- [x] Look into why performance slows when no person in frame - see if MP has early abort option **(fixed)**
+- [x] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than buffering events with <code>sleep()</code>  *(throttling seems to be faster, but the feedback mechanism I built wasn't optimal - don't discard this idea yet)*
 - [ ] Add option to use GPU - *medium priority* (runs fine without it, but may slow down if too many apps open)
 - [ ] Make full exercise classifier to replace placeholder mini one & finish demo level *medium priority*
 - [ ] Write guide on how to use
