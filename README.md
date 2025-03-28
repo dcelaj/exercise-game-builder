@@ -104,7 +104,7 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 
 - [ ] Look into using skl2onnx over joblib for better security - **high priority**
 - [x] Look into why performance slows when no person in frame - see if MP has early abort option **(fixed)**
-- [x] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than buffering events with <code>sleep()</code>  *(throttling seems to be faster, but the feedback mechanism I built wasn't optimal - don't discard this idea yet)*
+- [x] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than buffering events with <code>sleep()</code>  *(buffering seems to be faster, but the feedback mechanism I built wasn't optimal - don't discard this idea yet)*
 - [ ] Add option to use GPU - *medium priority* (runs fine without it, but may slow down if too many apps open)
 - [ ] Make full exercise classifier to replace placeholder mini one & finish demo level *medium priority*
 - [ ] Write guide on how to use
