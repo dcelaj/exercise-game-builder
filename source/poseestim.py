@@ -97,7 +97,6 @@ class Pose_Estimation(Thread):
     - return_mask: bool
 
     READ-ONLY Public Variables: 
-    - cap: cv2.VideoFeed
     - frame: ndarray
     - mp_image: ndarray
     - mp_result: MediaPipe Object
@@ -106,6 +105,7 @@ class Pose_Estimation(Thread):
     - ex_results: deque
 
     Protected Variables:
+    - cap: cv2.VideoFeed
     - _stop_event: Event (threading)
     - _m_updated: Event (threading)
     - _m_lock: Lock (threading)

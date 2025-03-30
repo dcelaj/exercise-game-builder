@@ -9,14 +9,9 @@ The project mostly uses the .value so this is for readability more than anything
 '''
 
 # Resolving project file paths:
-# root project directory (in this case, we are 2 layers in so we call parent twice)
+# Root project directory (in this case, we are 2 layers in so we call parent twice)
 root_dir = Path(__file__).resolve().parent.parent
-# specifying subfolders from project root
-lite_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_lite.task')
-full_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_full.task')
-heavy_mp_path = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_heavy.task')
-
-exercise_test = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest_ex.joblib')
+# Now we can specify subfolders relative to project root
 
 # Reading config file
 # TODO add some code reading the config and resolving any relevant paths 
@@ -27,19 +22,13 @@ class Exercises(Enum): # Edit if making new exercise
 
     HIGH_KNEES = 1
     SQUAT = 2
-    LEG_RAISE = 3
 
+    CRUNCH = 3
     PLANK = 4
     PUSHUP = 5
-    CRUNCH = 6
 
-    OVERHEAD_PRESS = 7 
-    DEADLIFT = 8
-    CURL = 9
-
-    LAT_RAISE = 10
-    TRICEP_EXTENSION = 11 
-
+    CAST_SPELL = 6
+    SWING_SWORD = 7
 
 # MediaPipe's result numbering
 class Body_Parts(Enum): 
@@ -80,12 +69,16 @@ class Body_Parts(Enum):
 # Adding the model paths to an enum for consistency
 class Model_Paths(StrEnum): 
     # Paths to MediaPipe model used
-    MP_LITE = lite_mp_path
-    MP_FULL = full_mp_path
-    MP_HEAVY = heavy_mp_path
+    MP_LITE = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_lite.task')
+    MP_FULL = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_full.task')
+    MP_HEAVY = os.path.join(root_dir, 'models', 'mediapipe', 'pose_landmarker_heavy.task')
 
     # Paths to custom exercise model used
-    EX_DEFAULT = exercise_test
+    EX_DEFAULT = os.path.join(root_dir, 'models', 'exercise_model', 'randomforest_ex.joblib')
+    
+    KNEES_N_LEGS = os.path.join(root_dir, 'models', 'exercise_model', 'rf_knees_n_legs.joblib')
+    SIT_N_PUSHUP = os.path.join(root_dir, 'models', 'exercise_model', 'rf_sit_n_pushup.joblib')
+    HACK_N_SLASH = os.path.join(root_dir, 'models', 'exercise_model', 'rf_hack_n_slash.joblib')
 
 # Finally, a dict mapping given exercises to a model. Sometimes one model can be used for multiple things
 # but you still want them to be different labels - like if you're making an RPG, swinging a sword is the
@@ -93,20 +86,13 @@ class Model_Paths(StrEnum):
 exercise_to_model = {
     Exercises.DEFAULT.value: Model_Paths.EX_DEFAULT.value,
 
-    Exercises.HIGH_KNEES.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.SQUAT.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.LEG_RAISE.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.HIGH_KNEES.value: Model_Paths.KNEES_N_LEGS.value,
+    Exercises.SQUAT.value: Model_Paths.KNEES_N_LEGS.value,
 
-    Exercises.PLANK.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.PUSHUP.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.CRUNCH.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.CRUNCH.value: Model_Paths.SIT_N_PUSHUP.value,
+    Exercises.PLANK.value: Model_Paths.SIT_N_PUSHUP.value,
+    Exercises.PUSHUP.value: Model_Paths.SIT_N_PUSHUP.value,
 
-    Exercises.OVERHEAD_PRESS.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.DEADLIFT.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.CURL.value: Model_Paths.EX_DEFAULT.value,
-
-    Exercises.LAT_RAISE.value: Model_Paths.EX_DEFAULT.value,
-    Exercises.TRICEP_EXTENSION.value: Model_Paths.EX_DEFAULT.value,
+    Exercises.CAST_SPELL.value: Model_Paths.HACK_N_SLASH.value,
+    Exercises.SWING_SWORD.value: Model_Paths.HACK_N_SLASH.value,
 }
-
-# Right now they all use the same model, but I plan on fixing that.

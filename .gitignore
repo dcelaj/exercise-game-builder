@@ -10,5 +10,5 @@ output/__pycache__
 output/*.ui
 output/*.py
 output/*.png
-*.ini
+desktop.ini
 TODO.txt

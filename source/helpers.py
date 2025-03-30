@@ -763,38 +763,39 @@ class Overlay(QWidget):
 
 # NPC Class
 class Q_NPC(QGraphicsObject):
+    '''
+    A QGraphicsObject container for you to put and manipulate NPCs. Use QPropertyAnimation to
+    animate as you see fit (just make sure you instantiate both this and the anim in the setup
+    func, as they need to be created in the main thread).
+
+    Has access to all the functions of QGraphicsItem, but also some from QObject - the object
+    thing really only becomes relevant in that it uses QPropertyAnimation, which only works on
+    QObjects but is easier to use and smoother than the deprecated QGraphicsItemAnimation.
+
+    I made instantiation position relative (ie an x val of 0.5 is halfway across the width of
+    the screen) and added a set_norm_pos function that sets position this way for convenience.
+    If you'd like to use these relative coords, helpers has a global function norm_to_pixel.
+
+    Assume all variables are private, you can't get a return from invoke and acessing a QObject 
+    is not thread safe. 
+
+    Arguments
+    - name, just a string holding name, no real use, more for housekeeping
+    - img_paths, a list of paths to images associated with object to cycle thru (shows idx 0)
+    - x_norm, normalized x value of screen width, defaults to 0 (same as pixel value of zero)
+    - y_norm, same as above, maps the height pixels to a value from 0 to 1, also defaults to 0
+    - z_abs, the z value if you want to set it at a particular place (default None, takes ints)
+    - width_norm, scales the image to a given width (normalized). Only works if height_norm is
+        None. If both height_norm and width_norm are None, loads image as is. Default is None.
+    - height_norm, scales the image to a given height (normalized, 1 being the height of the 
+        screen, always maintaining ratio). Default is 1.0.
+
+    - parent, the parent graphics object - use the QGraphicsItem built in funcs to alter this
+    PLEASE KEEP IN MIND IF AN OBJECT HAS A PARENT, ALL COORDS ARE NOW RELATIVE TO THAT PARENT
+    '''
+    # Constructor
     def __init__(self, name: str, img_paths: list, x_norm=0.0, y_norm=0.0,
                  z_abs: int =None, width_norm: float =None, height_norm=1.0, parent=None): 
-        '''
-        A QGraphicsObject container for you to put and manipulate NPCs. Use QPropertyAnimation to
-        animate as you see fit (just make sure you instantiate both this and the anim in the setup
-        func, as they need to be created in the main thread).
-
-        Has access to all the functions of QGraphicsItem, but also some from QObject - the object
-        thing really only becomes relevant in that it uses QPropertyAnimation, which only works on
-        QObjects but is easier to use and smoother than the deprecated QGraphicsItemAnimation.
-
-        I made instantiation position relative (ie an x val of 0.5 is halfway across the width of
-        the screen) and added a set_norm_pos function that sets position this way for convenience.
-        If you'd like to use these relative coords, helpers has a global function norm_to_pixel.
-
-        Assume all variables are private, you can't get a return from invoke and acessing a QObject 
-        is not thread safe. 
-
-        Arguments
-        - name, just a string holding name, no real use, more for housekeeping
-        - img_paths, a list of paths to images associated with object to cycle thru (shows idx 0)
-        - x_norm, normalized x value of screen width, defaults to 0 (same as pixel value of zero)
-        - y_norm, same as above, maps the height pixels to a value from 0 to 1, also defaults to 0
-        - z_abs, the z value if you want to set it at a particular place (default None, takes ints)
-        - width_norm, scales the image to a given width (normalized). Only works if height_norm is
-          None. If both height_norm and width_norm are None, loads image as is. Default is None.
-        - height_norm, scales the image to a given height (normalized, 1 being the height of the 
-          screen, always maintaining ratio). Default is 1.0.
-
-        - parent, the parent graphics object - use the QGraphicsItem built in funcs to alter this
-        PLEASE KEEP IN MIND IF AN OBJECT HAS A PARENT, ALL COORDS ARE NOW RELATIVE TO THAT PARENT
-        '''
         # Calling parent init, with object parent as input
         super().__init__(parent)
 
