@@ -102,9 +102,9 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Look into using skl2onnx over joblib for [security](https://security.snyk.io/vuln/SNYK-PYTHON-JOBLIB-3027033) - **high priority**
 - [x] Look into why performance slows when no person in frame - see if MP has early abort option **(fixed)**
 - [x] Test to see if an ack feedback mechanism in <code>invoke()</code> would work better than buffering events with <code>sleep()</code>  *(buffering seems to be faster, but the feedback mechanism I built wasn't optimal - don't discard this idea yet)*
-- [x] Make full exercise classifier to replace placeholder mini one & finish demo level *done!*
+- [x] Make full exercise classifier to replace placeholder mini one & finish demo level *(done!)*
 - [x] Write guide on how to use
 - [ ] Make custom image annotation function in helpers
 - [ ] Add in support for config file to store preferences (console log, model used, player name, etc...)
 - [ ] Add a tester python file that mimics the cam/pose output with dummy data so user doesn't have to wait 5-6 seconds every time to test a level
-- [ ] Look into possibly supporting 3D asets - would need a different library to handle 3D assets and print out camera view to pixmap. *low priority*
+- [ ] Look into possibly supporting 3D assets - would need a different library to handle 3D assets and print out camera view to pixmap. *low priority*
