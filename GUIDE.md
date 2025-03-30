@@ -108,7 +108,7 @@ Feel free to read the read-only public variables at any time. While technically 
 
 - frame, the image the camera currently sees (ndarray)
 - exercise, the integer alias of the current exercise being detected (see <code>enumoptions.py</code> to see what numbers correspond to what exercise)
-- ex_results, the results of the exercise classifier model (deque)
+- ex_results, the results of the exercise classifier model (a deque with length of 32, about 2 seconds worth of detections)
 
 Side note, if you're new to programming, this is an awful attitude to take with thread safety. 
 <details>

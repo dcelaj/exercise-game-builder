@@ -30,7 +30,7 @@ import helpers as hlp
 import poseestim as pe
 import enumoptions as op
 import os
-
+import time
 # Making dimensions global to use in level func - to be assigned values in start_level
 h = None
 w = None
@@ -144,7 +144,7 @@ def setup_demo(scene: QGraphicsScene):
     # Making NPC Bob
     bob1 = os.path.join(op.root_dir, "assets", "characters", "Bob", "B-happy.png")
     bob2 = os.path.join(op.root_dir, "assets", "characters", "Bob", "B-neutral.png")
-    bob = hlp.Q_NPC(0, [bob1, bob2], 0.1, 0.1)
+    bob = hlp.Q_NPC(0, [bob2, bob1], 0.1, 0.1)
     scene.addItem(bob)
     bob.setVisible(False)
 
@@ -167,10 +167,18 @@ def setup_demo(scene: QGraphicsScene):
     a_enter.addAnimation(a_scale)
     
     # KEEP IN MIND: Qt Animations are tied to an object, but that object can be changed with .setTargetObject
+    # However, animation groups do not have this function, only singular animations.
+
+    # Enemy NPC
+    ghost1 = os.path.join(op.root_dir, "assets", "characters", "enemies", "ghost.png")
+    ghost = hlp.Q_NPC("ghost", [ghost1], 0.7, 0.2)
+    scene.addItem(ghost)
+    ghost.setVisible(False)
 
     q_objects = {"alice": alice, 
                  "bob": bob, 
-                 "a_enter": a_enter}
+                 "a_enter": a_enter,
+                 "ghost": ghost}
     return q_objects
 
 # DEMO LEVEL + EXPLANATION
@@ -200,11 +208,14 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     counter = 0
     player_hp = 100
     enemy_1_hp = 15
+    results = None
+    combo = 0 # successes in a row
 
     # Setting background
+    trans = os.path.join(op.root_dir, "assets", "backgrounds", "transition.png")
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "moonlit.png")
     bg_path_2 = os.path.join(op.root_dir, "assets", "backgrounds", "gym.png")
-    bg_pixmap = QPixmap(bg_path) 
+    bg_pixmap = QPixmap(bg_path_2) 
     bg_pixmap = bg_pixmap.scaledToWidth(w + 50)
     hlp.invoke(scene.setBackgroundBrush, bg_pixmap)
 
@@ -213,7 +224,8 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     hlp.invoke(obj_list["a_enter"].start)
 
     # First line of dialogue
-    hlp.invoke(overlay.set_text, "Example of responsiveness - leave the frame")
+    hlp.invoke(overlay.set_text, "Hi, I'm Alice. Welcome to the gym!")
+    sleep(2) # Time for player to read
 
     # Game loop begins
     while game_loop.is_set():
@@ -221,18 +233,145 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
         frame = cam_thread.get_default_annotation()
         hlp.invoke(overlay.pp.update_frame, frame)
 
-        # Reading player head position from camera thread
+        # Updating HP constantly based off player head visibility for no reason other than it looks neat
         nose_pos, nose_vis = cam_thread.get_body_part()
-        # Responding to that
-        if nose_vis > 0.9:
-            hlp.invoke(overlay.pp.update_stat_bar, 90)
-        elif nose_vis > 0.6:
-            hlp.invoke(overlay.pp.update_stat_bar, 60)
-        elif nose_vis > 0.3:
-            hlp.invoke(overlay.pp.update_stat_bar, 30)
-        else:
-            hlp.invoke(overlay.pp.update_stat_bar, 1)
+        hlp.invoke(overlay.pp.update_stat_bar, int(nose_vis * 100))
         
+        # Begin first phase
+        if phase == 0:
+            # Gameplay logic
+            # Updating results list and checking for successes every 200 loops (about every 2 sec on my machine)
+            # this is necessary because our loop is much faster than the machine learning models can inference
+            if (counter % 200) == 0:
+                results = cam_thread.ex_results
+                results = list(results)
+                if len(results) < 32:
+                    extras = 32 - len(results)
+                    for i in range(1, extras):
+                        results.append(0)
+                
+                # Let's make multiple successes in a row build a combo! 
+                # I'll count over half the results being positive as a success.
+                if sum(results) > 16:
+                    # Increase combo
+                    combo += 1
+                elif sum(results) == 0:
+                    # If all are fail, let's decrease combo
+                    combo += -1
+                
+                # If you build a big enough combo, things happen!
+                if combo > 25:
+                    hlp.invoke(overlay.set_text, "Wow, great job!")
+                    hlp.invoke(obj_list["alice"].cycle_img, 0)
+                elif combo < -35:
+                    hlp.invoke(overlay.set_text, "Looks like you need a breather. Take a moment to recover.")
+                    hlp.invoke(obj_list["alice"].cycle_img, 1)
+                    combo = 0
+            #
+
+            # I'll increment counter each time the if block is executed so these are one time events:
+            if counter == 0:
+                hlp.invoke(overlay.set_text, "Here we enter the first phase! Let's start off with some high-knees.")
+                hlp.invoke(obj_list["alice"].cycle_img, 1)
+            elif counter == 600:
+                a = "Each distinct phase of the game is held in a big if statement within the game loop - if phase == 1"
+                b = ": do the checks for the specific exercise, etc. This is nice because each section ends up organized under "
+                c = "it's own if statement, but they can share data. This level uses an additional counter variable to check how many"
+                d = a + b + c + " loops have been spent in one phase. Right now the game is frozen so you have time to read this."
+                hlp.invoke(overlay.set_text, d)
+                sleep(10)
+            elif counter == 1800:
+                a = "Right now, the level thread is getting the last two seconds of results from the camera thread and seeing "
+                b = "how many frames were successfully doing the exercise. It does this every few seconds by using an "
+                c = "if statement like this in the game loop: if (counter % 200) == 0: results = cam_thread.ex_results"
+                d = a + b + c + ". This is necessary because the game loop is far faster than the ML inference."
+                hlp.invoke(overlay.set_text, d)
+                sleep(10)
+            elif counter == 3000:
+                a = "To make one off messages such as these, just plop a simple check to see if a counter has reached "
+                b = "a specific number. Finally, don't forget an if statement at the very end checking for the criteria to "
+                c = "change the level phase or win the level. Otherwise I'm stuck working my shift at this gym for all eternity. "
+                d = a + b + c + " There are lots of if statements when making a game with this but it ends up pretty neat."
+                hlp.invoke(overlay.set_text, d)
+                sleep(10)
+            elif counter == 4200:
+                d = "Now let's get back to exercising!"
+                hlp.invoke(overlay.set_text, d)
+
+            # Incrementing counter and checking for next phase condition
+            counter += 1
+            if counter > 20000 or combo > 50:
+                phase = 1
+                counter = 0
+                hlp.invoke(overlay.set_text, "Great job! Let's take a breather.")
+                hlp.invoke(obj_list["alice"].cycle_img, 0)
+
+                # Transition screen
+                sleep(5)
+                hlp.invoke(obj_list["alice"].setVisible, False)
+                hlp.invoke(overlay.set_text, " ")
+                bg_pixmap = QPixmap(trans)
+                bg_pixmap = bg_pixmap.scaledToWidth(w + 50)
+                hlp.invoke(scene.setBackgroundBrush, bg_pixmap)
+
+                # Setting new exercise model
+                cam_thread.set_exercise(op.Exercises.SWING_SWORD.value)
+                sleep(5)
+
+                # Change setting for new phase
+                bg_pixmap = QPixmap(bg_path) 
+                bg_pixmap = bg_pixmap.scaledToWidth(w + 50)
+                hlp.invoke(scene.setBackgroundBrush, bg_pixmap)
+
+                hlp.invoke(obj_list["bob"].setVisible, True)
+                hlp.invoke(overlay.set_text, "Hi, I'm Bob! I found you knocked out cold in this forest.")
+                sleep(5)
+        
+        # Begin second phase
+        if phase == 1:
+            # Dialogue/Cutscene
+            if counter == 0:
+                hlp.invoke(overlay.set_text, "These woods are dangerous - and perfect for showing off combat mechanics.")
+                sleep(5)
+                hlp.invoke(overlay.set_text, "Oh no, is that a g-g-g-g-g-g-ghost?")
+                hlp.invoke(obj_list["ghost"].setVisible, True)
+                sleep(5)
+                hlp.invoke(overlay.set_text, "Quickly, use the sword you have because this is a fantasy RPG setting! TAKE A SWING!")
+                sleep(5)
+            
+            if (counter % 200) == 0:
+                # Getting results
+                results = cam_thread.ex_results
+                results = list(results)
+                if len(results) < 32:
+                    extras = 32 - len(results)
+                    for i in range(1, extras):
+                        results.append(0)
+                
+                # Input check
+                if sum(results) > 16:
+                    enemy_1_hp += -5
+                elif sum(results) == 0:
+                    player_hp += -5
+                    enemy_1_hp += 5
+                
+                # Health check
+                if enemy_1_hp < 5 or enemy_1_hp > 100: # the second part is just giving you the win if you're losing bc it's a tutorial
+                    hlp.invoke(obj_list["ghost"].setVisible, False)
+                    hlp.invoke(overlay.set_text, "You saved us AND you demonstrated the potential gameplay mechanics!")
+                    hlp.invoke(obj_list["bob"].cycle_img)
+                    sleep(5)
+                    hlp.invoke(overlay.set_text, "Level Complete!")
+                    sleep(5)
+                    # artificially setting counter high so level ends
+                    counter = 19800
+                
+            # Counter and win condition check
+            counter += 1
+            if counter > 19998:
+                phase = 3
+                game_loop.clear()
+        #
 
 #__________________________
 
@@ -281,7 +420,9 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
     # REMEMBER: Use invoke_in_main_thread (or just invoke) when changing GUI elements
 
     # Smaller mini setup
-    # Might wanna set starting HP here too
+    # Counter and phase variable to help control how frequently things get checked and pacing of level
+    phase = 0
+    counter = 0
     # Background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "YOUR_BACKGROUND_HERE.png")
     bg_pixmap = QPixmap(bg_path) 
@@ -291,7 +432,7 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
     hlp.invoke(obj_list["NPC Name"].setVisible, True)
     # Dialogue
     hlp.invoke(overlay.set_text, "YOUR TEXT HERE")
-
+    
     # Game loop
     while game_loop.is_set():
         # Update player frame if needed
