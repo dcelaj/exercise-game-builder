@@ -54,11 +54,13 @@ I've written a couple of custom Qt objects for use in the game:
         - <code>set_new_img</code>
         - <code>cycle_img</code>
         - <code>set_norm_pos</code>
-- <code>Overlay</code>, a QWidget which acts as the game UI. Takes as arguments...
+- <code>Overlay</code>, a QWidget which acts as the game overlay containing the dialogue text, NPC portrait, and player portrait and stats.
     - Functions include all of the functions a normal QWidget has, in addition to:
         - <code>pp.update_frame</code>
         - <code>pp.update_stat_bar</code>
         - <code>np.set_new_img</code>
+        - <code>np.set_new_img_list</code>
+        - <code>np.cycle_img</code>
         - <code>np.set_new_name</code>
         - <code>set_text</code>
 
@@ -73,6 +75,8 @@ This is where the actual game loop and logic takes place. You are in charge of d
 This is all up to you.
 
 #### It is important to note that the functions of the Qt Objects described above **should not be called normally while in this thread**, as Qt Objects are not thread safe. You should **instead use <code>invoke(object.function, arguments)</code>**, a piece of code which tells the main thread to execute the object function when it has time.
+
+Don't use <code>invoke_in_main_thread</code>, that's only used internally in the <code>invoke</code> function.
 
 ### Camera Thread
 

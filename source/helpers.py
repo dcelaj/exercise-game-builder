@@ -378,11 +378,40 @@ class NPC_Portrait(QWidget):
     def set_new_img(self, new_path):
         '''
         Set a new image for the pixmap - one required argument, a string holding the path to the
-        new image file.
+        new image file. If input is None, sets the image to blank.
         '''
+        if new_path is None:
+            new_path = [str(os.path.join(op.root_dir, "assets", "characters", "blank.png"))]
+
         # Setting an entirely new image, so reassign pixmap
         self.pixmap = QPixmap(new_path)
         self.frame_label.setPixmap(self.pixmap)
+    
+    def set_new_name(self, new_name):
+        '''
+        Sets a new name under the NPC portrait. Takes a string. To set name to blank, just pass a
+        space between quotes.
+        '''
+        self.name = new_name
+        self.name_label.setText(self.name)
+    
+    def set_new_img_list(self, img_paths):
+        '''
+        Sets a new list of file paths for you to cycle through in the future. Takes one argument, a 
+        list of image paths.
+        '''
+        # Input handling
+        if type(img_paths) is str:
+            img_paths = [img_paths]
+        if img_paths is None:
+            img_paths = [str(os.path.join(op.root_dir, "assets", "characters", "blank.png"))]
+        elif type(img_paths) is not list:
+            raise Exception("img_paths must be either a string or list of strings containing image paths")
+        
+        # Update image path list stats
+        self.idx = 0 # Index of first image in list
+        self.num_paths = len(img_paths)
+        self.img_paths = img_paths
     
     def cycle_img(self, index:int =None):
         '''

@@ -191,7 +191,15 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
     - game_loop controls whether the game loop is still running or not
     - cam_thread is the camera pose estimation thread that tracks player input
     '''
-    # Smaller mini setup 
+    # Smaller mini setup
+
+    # Internal variables
+    phase = 0 
+    # Used to create different phases within a level by checking this with an if
+    # and having conditions for changing it within that if
+    counter = 0
+    player_hp = 100
+    enemy_1_hp = 15
 
     # Setting background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "moonlit.png")
