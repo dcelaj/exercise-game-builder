@@ -288,8 +288,8 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
                 hlp.invoke(overlay.set_text, d)
                 sleep(10)
             elif counter == 3000:
-                a = "To make one off messages such as these, just plop a simple check to see if a counter has reached "
-                b = "a specific number. Finally, don't forget an if statement at the very end checking for the criteria to "
+                a = "I'd recommend using time.time() rather than relying on loop timing to time checks though, so it's consistent "
+                b = "on faster machines. Finally, don't forget an if statement at the very end checking for the criteria to "
                 c = "change the level phase or win the level. Otherwise I'm stuck working my shift at this gym for all eternity. "
                 d = a + b + c + " There are lots of if statements when making a game with this but it ends up pretty neat."
                 hlp.invoke(overlay.set_text, d)
@@ -363,7 +363,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
                     sleep(5)
                     hlp.invoke(overlay.set_text, "Level Complete!")
                     sleep(5)
-                    # artificially setting counter high so level ends
+                    # artificially setting counter high so level ends - probably best to use time.time() for these but I'm lazy rn
                     counter = 19800
                 
             # Counter and win condition check
@@ -423,6 +423,7 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
     # Counter and phase variable to help control how frequently things get checked and pacing of level
     phase = 0
     counter = 0
+    t = time.time()
     # Background
     bg_path = os.path.join(op.root_dir, "assets", "backgrounds", "YOUR_BACKGROUND_HERE.png")
     bg_pixmap = QPixmap(bg_path) 
@@ -441,5 +442,14 @@ def level_1(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, obj_l
 
         # YOUR GAME LOGIC HERE
 
-
+# _________________________
+def start_3d_level():
+    # Since Qt doesn't have a container for 3d items, it would instead be best to handle 3d assets with some other library
+    # that supports efficiently reading and interacting with them, and also ideally has some camera funtion. You could then
+    # continually read the virtual camera, perhaps move it based on player input, and print that output onto a QPixmap or
+    # any normal image container.
+    # You'd probably also want to do interpolation and manage the input delay since movement will be slightly delayed and 
+    # choppy. This might eb a project for another time, but it may be more efficient to just write a wrapper for MediaPipe
+    # to work with pre-existing 3D game software like Godot. That might be instead what I tackle next.
+    pass
 # _________________________
