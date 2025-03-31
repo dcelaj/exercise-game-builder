@@ -288,7 +288,7 @@ def level_demo(scene:QGraphicsScene, view:QGraphicsView, overlay:hlp.Overlay, ob
                 hlp.invoke(overlay.set_text, d)
                 sleep(10)
             elif counter == 3000:
-                a = "I'd recommend using time.time() rather than relying on loop timing to time checks though, so it's consistent "
+                a = "It's recommended to use time.time() rather than relying on loop timing to time checks though, so it's consistent "
                 b = "on faster machines. Finally, don't forget an if statement at the very end checking for the criteria to "
                 c = "change the level phase or win the level. Otherwise I'm stuck working my shift at this gym for all eternity. "
                 d = a + b + c + " There are lots of if statements when making a game with this but it ends up pretty neat."
