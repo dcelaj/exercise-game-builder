@@ -82,7 +82,7 @@ Don't use <code>invoke_in_main_thread</code>, that's only used internally in the
 
 This thread reads your camera input and passes it through two machine learning models - one being MediaPipe's pose estimation model to output estimated coordinates of body parts, and the second being a random forest classifier to take that output and classify it. You don't really need to worry about this thread (unless you want to change the type of classifier), you just need to know how you can read its output. 
 
-If you DO want to know more about how these models work, read the "Machine Learning" and "ADDENDUM" sections in the README.md file.
+If you DO want to know more about how these models work, read the "Machine Learning" and "ADDENDUM" sections in the <code>README.md</code> file.
 
 Anyways, to read from this thread, use:
 
