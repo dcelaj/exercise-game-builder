@@ -107,4 +107,5 @@ Ultimately this is meant to be a tool for building body tracking games, albeit a
 - [ ] Make custom image annotation function in helpers
 - [ ] Add in support for config file to store preferences (console log, model used, player name, etc...)
 - [ ] Add a tester python file that mimics the cam/pose output with dummy data so user doesn't have to wait 5-6 seconds every time to test a level
-- [ ] Look into possibly supporting 3D assets - would need a different library to handle 3D assets and print out camera view to pixmap. *low priority*
+- [ ] Look into possibly supporting 3D assets - would need a different library to handle 3D assets and print out camera view to pixmap. 
+    - *Would probably be more efficient to write a script integrating MP into an existing 3D game builder though. Looking into Godot for now, since that doesn't seem to have MP support.*
