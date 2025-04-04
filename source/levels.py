@@ -449,7 +449,12 @@ def start_3d_level():
     # continually read the virtual camera, perhaps move it based on player input, and print that output onto a QPixmap or
     # any normal image container.
     # You'd probably also want to do interpolation and manage the input delay since movement will be slightly delayed and 
-    # choppy. This might eb a project for another time, but it may be more efficient to just write a wrapper for MediaPipe
+    # choppy. This might be a project for another time, but it may be more efficient to just write a wrapper for MediaPipe
     # to work with pre-existing 3D game software like Godot. That might be instead what I tackle next.
+
+    # Resources for future me or someone else who decides to tackle the 3D support:
+    # https://github.com/wikibook/dl-vision/blob/master/Chapter07/ch7_nb3_render_images_from_3d_models.ipynb 
+    # https://pypi.org/project/plyfile/
+    # https://pypi.org/project/PyOpenGL/
     pass
 # _________________________
