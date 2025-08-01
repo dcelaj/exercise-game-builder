@@ -104,23 +104,23 @@ Anyways, to read from this thread, use:
 
 <br>
 
-Feel free to read the read-only public variables at any time. While technically not thread safe, the way this was written combined with Python's Global Interpreter Lock means the worst that will happen is your reading will be slightly outdated by a few milliseconds. These are the most useful ones:
+Feel free to read the read-only public variables at any time. While technically not thread safe, this doesn't really cause any crashes or big issues*. These are the most useful ones:
 
 - frame, the image the camera currently sees (ndarray)
 - exercise, the integer alias of the current exercise being detected (see <code>enumoptions.py</code> to see what numbers correspond to what exercise)
 - ex_results, the results of the exercise classifier model (a deque with length of 32, about 2 seconds worth of detections)
 
-Side note, if you're new to programming, this is an awful attitude to take with thread safety. 
+*Side note, if you're new to programming, this is an awful attitude to take with thread safety. 
 <details>
-<summary>Here are all the reasons why my statements above are stupid and oversimplified:</summary>
+<summary>Here's why:</summary>
 
 It's technically wrong to say a crash couldn't happen here. For one, numpy is involved which uses C to do its black magic and in the process releases the Global Interpreter Lock. But even if everything was 100% vanilla python with the GIL active, python bytecode doesn't only consist of atomic operations.
 
-It's easy to forget the nightmarish complexity of the underlying hardware and operating system. The python you write is parsed and becomes an abstract syntax tree, which is then compiled into python bytecode. Then, of course, the python bytecode is handled by the Python Virtual Machine (normally written in C), the resulting machine code is given to the operating system, and ten million steps later becomes the electrical signals in your computer chip (those ten million previous steps were also electrical signals on the chip, just these ones now actually correspond to the instructions you coded - a portion of them at least).
+It's easy to forget the nightmarish complexity of the underlying hardware and operating system. The python you write is parsed and becomes an abstract syntax tree, which is then compiled into python bytecode. Then, the python bytecode is handled by the Python Virtual Machine, the resulting machine code is given to the operating system, and ten million steps later becomes the electrical signals in your computer chip. Those ten million previous steps were also electrical signals on the chip, just these ones now actually correspond to the instructions you coded - a portion of them at least.
 
-As a programmer you are given a neat and tidy abstraction to work with, so it's best practice to play by the rules of that abstraction unless you're sure that none of those 10 million hidden variables will ruin your day (of course there are also plenty of times when breaking these rules is necessary, and plenty of people with the insane experience and knowledge to pull it off).
+As a programmer you are given a neat and tidy abstraction to work with, so it's best practice to play by the rules of that abstraction unless you're sure that none of those 10 million hidden steps will ruin your day (of course there are also plenty of times when breaking these rules is necessary, and plenty of people with the insane experience and knowledge to pull it off).
 
-THAT BEING SAID, I take this attitude here is because this is a stupid game that is available for free. The resulting implementation is safe enough, faster, and easier to write. If a crash happens, I get to have fun trying to piece together what exactly happened on the instruction level. Experimenting and breaking stuff is fun, live a little, use some non thread safe code as a treat.
+THAT BEING SAID, I take this attitude here is because this is a stupid game that is available for free. The resulting implementation is safe enough, faster, and easier to write. If a crash happens, I get a nice puzzle trying to solve what exactly happened on the instruction level.
 </details>
 <br>
 TL;DR: If you decide to make a product for sale using this, I'd stick to using the thread safe <code>get_results</code>.
