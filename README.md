@@ -22,7 +22,7 @@ The project file structure is as follows:
 - The **source** folder contains all the python code and modules.
 - The **requirements** text file contains all the packages needed to run this code.
 - The exact versions of everything I used in development are given in the **version-info** text file.
-- The **GUIDE** markdown file goes into more detail on how to make a level.
+- The **GUIDE** markdown file goes into more detail on how to make a level, and the **EXTRAINFO** one goes into more detail on how the program works in general.
 
 The source folder contains:
 
