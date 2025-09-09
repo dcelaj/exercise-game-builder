@@ -2,9 +2,13 @@
 
 This is a small exercise game builder programmed in Python. The program uses the computer's camera and tries to detect a user's pose, instructing them to complete exercises to progress and responding to the user's exercise. I use **PySide6/Qt** for the GUI, **MediaPipe** and **OpenCV** to achieve the pose estimation, **Pandas, Numpy, and Scikit Learn** for some extra machine learning tools, and **PyInstaller** to package everything.
 
-I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, **feel free to use any of this code** to make a proper game (just abide by the licensing rules of the packages used); the main pose estimation code doesn't use any Qt in it at all, so you can just lift that if you want to use a completely different GUI and game structure. **Python 3.11 or later** is recommended, just make sure that the version can install all the requirements properly. 
+I've structured the project so that it's simple for others to modify it and add levels. If you see this out in the wild, **feel free to use any of this code** to make a proper game (just abide by the licensing rules of the packages used); the main pose estimation code doesn't use any Qt in it at all, so you can just lift that if you want to use a completely different GUI and game structure. 
 
 As it stands this is mainly a personal project to integrate GUIs, multithreading, and machine learning into one project - I'm certainly not a good enough artist to turn this into a proper game myself.
+
+## Requirements
+
+**Python 3.11 or later** is recommended, just make sure that the version can install all the packages in requirements.txt properly. **You'll also have to download the mediapipe models yourself** [here](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) and put them in the mediapipe folder.
 
 ## Project Structure
 
